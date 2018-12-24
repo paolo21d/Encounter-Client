@@ -1,0 +1,4 @@
+#!/bin/sh
+g++ -std=c++11 -c turbo.cpp
+g++ -o turboapp turbo.o -lsfml-window -lsfml-graphics -lsfml-system
+./turboapp

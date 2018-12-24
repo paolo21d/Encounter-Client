@@ -1,0 +1,4 @@
+#!/bin/sh
+
+g++ -std=c++11 -c gameClient.cpp News.cpp
+g++ -o gameClient gameClient.o News.o -lsfml-network -lsfml-system
