@@ -27,17 +27,17 @@ int main()
 	
 	//GAME
 	sf::Texture map;		//ładuje tekstury
-	if (!map.loadFromFile("mapka2.png"))
+	if (!map.loadFromFile("../img/mapka2.png"))
 	{
 		std::cout << "ups..." << std::endl;
 	}
 	sf::Texture intro;
-	if (!intro.loadFromFile("intro.png"))
+	if (!intro.loadFromFile("../img/intro.png"))
 	{
 		std::cout << "ups..." << std::endl;
 	}
 	sf::Texture ziomek;
-	if (!ziomek.loadFromFile("ziomek.png"))
+	if (!ziomek.loadFromFile("../img/ziomek.png"))
 	{
 		std::cout << "ups..." << std::endl;
 	}
@@ -156,7 +156,7 @@ int main()
 			if(licznik > 23)
 				PHASE = GAME;
 			s = std::to_string(24 - licznik);
-			tempTexture.loadFromFile(s + ".png");
+			tempTexture.loadFromFile("../img/" + s + ".png");
 			tempSprite.setTexture(tempTexture);
 			tempSprite.setScale(Vector2f(0.35f, 0.35f));
 			tempSprite.setPosition(sf::Vector2f(50.f, 100.f));
