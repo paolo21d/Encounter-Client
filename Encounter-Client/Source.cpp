@@ -23,5 +23,13 @@ int main()
 		game.cannnotConnect();
 		return -2;
 	}
+	
+	try {
+		game.enterName();
+	}
+	catch (...) {
+		cout << "Zamykam" << endl;
+		return 0;
+	}
 	return 0;
 }
