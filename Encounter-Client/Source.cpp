@@ -1,11 +1,19 @@
-//#include <SFML/Window.hpp>
-//
-//int main()
-//{
-//	sf::Window oknoAplikacji(sf::VideoMode(800, 600, 32), "Kurs SFML 2.0 - http://cpp0x.pl");
-//	while (oknoAplikacji.isOpen())
-//	{
-//		oknoAplikacji.display();
-//	}
-//	return 0;
-//}
+#include "Game.h"
+#include "Communication.h"
+#include <SFML/Window.hpp>
+#include <iostream>
+using namespace std;
+int main()
+{
+	Game game;
+	game.intro();
+	Communication communication;
+	try {
+		communication.startCommunication();
+	}
+	catch (...) {
+		cout << "Connection Error" << endl;
+		return -2;
+	}
+	return 0;
+}
