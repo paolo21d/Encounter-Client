@@ -10,6 +10,9 @@ public:
 	Game();
 	~Game();
 	void intro();
+	void enterName();
+	void enterNameDraw(std::string &name, sf::Text &textName, sf::Text &hello);
 	void setMap(Map& recMap);
+	void cannnotConnect();
 };
 

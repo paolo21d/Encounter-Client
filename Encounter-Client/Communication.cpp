@@ -3,6 +3,7 @@
 #include "Map.h"
 #include <SFML\Network.hpp>
 #include <iostream>
+#include <fstream>
 using namespace std;
 using namespace sf;
 
@@ -25,8 +26,22 @@ void Communication::startCommunication() {
 
 void Communication::receiveMap() {
 	//odbieram grafiki i je zapisuje pod odpowiednia nazwa do folderu 'receiveImg'
+	//odbieram ramke z informacja ile grafik otrzymam
 	socket.receive(packet);
-
+	unsigned GraphicsQuantity;
+	packet >> GraphicsQuantity;
+	string name;
+	const unsigned buffSize = 70000; //przetestowac rozmiar i dopasowac do najwiekszej grafiki
+	char buffer[buffSize]; 
+	fstream file;
+	for (unsigned i = 0; i < GraphicsQuantity; ++i) { //odbieram po kolei ramki z grafikami w postaci textu i ich nazwy, zapisuje je od folderu 'receiveImg'
+		socket.receive(packet);
+		packet >> name;
+		packet >> buffer;
+		file.open("../receiveImg/" + name, ios::out | ios::binary);
+		file.write(buffer, buffSize);
+		file.close();
+	}
 	//odbieram ramke: 1. mapSizeX 2. mapSizeY 3. ilosc lokacji 4. areaSizeX 5. areaSizeY 6. po kolei lokacje czyli najpierw id a potem src
 	socket.receive(packet);
 	unsigned x, y, areaX, areaY, vecSize;

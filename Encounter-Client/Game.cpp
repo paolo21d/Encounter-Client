@@ -56,7 +56,92 @@ void Game::intro() {
 
 }
 
+void Game::enterName() {
+	Text textName, hello;
+	string name;
+	Font font;
+	font.loadFromFile("../img/Lato-Light.ttf");
+
+	textName.setFont(font);
+	textName.setCharacterSize(30);
+	textName.setPosition(100, 300);
+
+	hello.setCharacterSize(50);
+	hello.setString(L"Witaj, wpisz swoje imiê  \nnastêpnie naciœnij enter aby rozpocz¹æ grê");
+	hello.setPosition(100, 100);
+	hello.setFont(font);
+
+	enterNameDraw(name, textName, hello);
+
+	while (appWindow->isOpen()) {
+		Event event;
+		while (appWindow->pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				appWindow->close();
+				throw exception("0");
+			}
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
+				appWindow->close();
+				throw exception("0");
+			}
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Enter) {
+				if (name.empty()) continue;
+				//ustaw imie
+				return;
+			}
+			else if (event.type == Event::KeyPressed && event.key.code >= Keyboard::A && event.key.code <= Keyboard::Z) {
+				//cout << event.key.code + 65;
+				cout << static_cast<char>(event.key.code + 65);
+				name += static_cast<char>(event.key.code + 65);
+				//name.append(event.key.code + 65);
+			}
+			else if(event.type == Event::KeyPressed && event.key.code == Keyboard::Backspace) {
+				if (!name.empty()) {
+					name.erase(name.end() - 1);
+				}
+			}
+
+			enterNameDraw(name, textName, hello);
+		}
+	}
+}
+
+void Game::enterNameDraw(string &name, Text &textName, Text &hello) {
+	appWindow->clear(Color(150, 150, 150));
+	appWindow->draw(hello);
+	if (!name.empty()) {
+		textName.setString(name);
+		appWindow->draw(textName);
+	}
+	appWindow->display();
+}
+
 void Game::setMap(Map & recMap) {
 	worldMap = recMap;
+}
+
+void Game::cannnotConnect() {
+	Text text;
+	Font font;
+	font.loadFromFile("../img/Lato-Light.ttf");
+	text.setFont(font);
+	text.setCharacterSize(40);
+	text.setPosition(100, 400);
+	text.setFillColor(Color(255, 255, 255));
+	text.setString(L"Nie mo¿na siê po³¹czyæ z serwerem!\nNaciœnij ESC");
+	appWindow->clear(Color(50, 50, 50));
+	appWindow->draw(text);
+	appWindow->display();
+	while (appWindow->isOpen()) {
+		Event event;
+		while (appWindow->pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				appWindow->close();
+			}
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
+				appWindow->close();
+			}
+		}
+	}
 }
 
