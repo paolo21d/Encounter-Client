@@ -8,6 +8,9 @@
 using namespace std;
 using namespace sf;
 
+unsigned Location::areaSizeX = 0;
+unsigned Location::areaSizeY = 0;
+
 Communication::Communication() {
 	ip = IpAddress::getLocalAddress();
 }
@@ -44,27 +47,33 @@ void Communication::receiveMap() {
 		socket.receive(packet);
 		packet >> name;
 		packet >> buffer;
-		file.open("../receiveImg/" + name, ios::out | ios::binary);
+		file.open("../receiveImg/" + name, ios::out | ios::binary); //dorzuciæ flage do nadpisywania
+		//moze dorzucic czysczenie pliku
 		file.write(buffer, buffSize);
 		file.close();
 	}
 	//odbieram ramke: 1. mapSizeX 2. mapSizeY 3. ilosc lokacji 4. areaSizeX 5. areaSizeY 6. po kolei lokacje czyli najpierw id a potem src
 	Packet packet2;
 	socket.receive(packet2);
-	unsigned x, y, areaX, areaY, vecSize;
+	unsigned mapX, mapY, areaX, areaY, vecSize;
 	//Location tempLocation;
 	string locationSrc;
 	int locId;
-	packet2 >> x;
-	packet2 >> y;
-	Map tempMap(x, y);
+
+	packet2 >> mapX;
+	packet2 >> mapY;
+	Map tempMap(mapX, mapY);
+
 	packet2 >> vecSize;
 	packet2 >> areaX;
 	packet2 >> areaY;
+	Location::areaSizeX = areaX;
+	Location::areaSizeY = areaY;
 	for (int i = 0; i < vecSize; ++i) {
 		packet2 >> locId;
 		packet2 >> locationSrc;
-		Location tempLocation(areaX, areaY, locId, locationSrc);
+		//dorzuciæ wysy³anie co znajduje sie na lokacji
+		Location tempLocation(locId, locationSrc);
 		tempMap.addLocation(tempLocation);
 	}
 	

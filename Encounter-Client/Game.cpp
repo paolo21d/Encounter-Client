@@ -11,6 +11,8 @@ using namespace std;
 
 Game::Game(){
 	appWindow = new RenderWindow(VideoMode(1114, 572, 32), "Encounter");
+	//RenderWindow temp(VideoMode(1114, 572, 32), "Encounter");
+	//appWindow = temp;
 }
 
 Game::~Game(){

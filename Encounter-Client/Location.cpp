@@ -8,9 +8,9 @@ using namespace sf;
 Location::Location() {
 }
 
-Location::Location(unsigned x, unsigned y, int locid, string src) {
-	areaSizeX = x;
-	areaSizeY = y;
+Location::Location(int locid, string src) {
+	/*areaSizeX = x;
+	areaSizeY = y;*/
 	id = locid;
 	if (!locationTexture.loadFromFile("../receiveImg/" + src)) {
 		throw exception("-1");

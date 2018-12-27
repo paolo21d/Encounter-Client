@@ -1,14 +1,16 @@
 #pragma once
 #include <SFML\Graphics.hpp>
+#include "Object.h"
 class Location {
 	int id;
-	unsigned areaSizeX;
-	unsigned areaSizeY;
 	sf::Texture locationTexture;
 	sf::Sprite locationSprite;
+	std::vector <Object*> objects;
 public:
+	static unsigned areaSizeX;
+	static unsigned areaSizeY;
 	Location();
-	Location(unsigned x, unsigned y, int id, std::string src);
+	Location(int id, std::string src);
 	~Location();
 };
 

@@ -6,7 +6,7 @@ using namespace std;
 int main()
 {
 	Game game;
-	//game.intro();
+	game.intro();
 	try {
 		game.enterName();
 	}
@@ -23,7 +23,7 @@ int main()
 		game.cannnotConnect();
 		return -2;
 	}
-	
+	//game.startGame();
 	try {
 		game.enterName();
 	}
