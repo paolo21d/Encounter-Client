@@ -1,6 +1,7 @@
 #include "Communication.h"
 #include "Location.h"
 #include "Map.h"
+#include "News.h"
 #include <SFML\Network.hpp>
 #include <iostream>
 #include <fstream>

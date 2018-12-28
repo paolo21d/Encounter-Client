@@ -147,3 +147,7 @@ void Game::cannnotConnect() {
 	}
 }
 
+void Game::startGame() {
+
+}
+
