@@ -92,7 +92,9 @@ void Communication::receiveMap() {
 			packet2 >> objY;
 			packet2 >> objSrc;
 			packet2 >> objType;
-			if (objType == 0) { //dealer
+			Object* obj = new Object(objSrc, objId, objX, objY);
+			tempLocation.addObject(obj);
+			/*if (objType == 0) { //dealer
 				//pisac
 			}
 			else if (objType == 1) { //Nature
@@ -103,7 +105,7 @@ void Communication::receiveMap() {
 			}
 			else if (objType == 3) { //Chest
 
-			}
+			}*/
 		}
 		tempMap.addLocation(tempLocation);
 	}

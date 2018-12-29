@@ -2,7 +2,6 @@
 #define NEWS_H
 #include <iostream>
 #include <fstream>
-#include "Character.h"
 #include "Deck.h"
 #include "SFML/Network.hpp"
 

@@ -19,10 +19,12 @@ Location::Location(int locid, string src) {
 	locationSprite.setTexture(locationTexture);
 }
 
-
-Location::~Location()
-{
+Location::~Location() {
+	for (auto it = objects.begin(); it != objects.end(); it++) {
+		delete *it;
+	}
 }
+
 
 /*void Location::draw(sf::RenderWindow * appWindow) {
 	Sprite sp;
