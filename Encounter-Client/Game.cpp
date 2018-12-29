@@ -11,7 +11,7 @@ using namespace std;
 
 
 Game::Game(){
-	appWindow = new RenderWindow(VideoMode(1114, 572, 32), "Encounter");
+	appWindow = new RenderWindow(VideoMode(1000, 550, 32), "Encounter");
 	mode = EXPLORE;
 	squareHeight = 20;
 	squareHeight = 20;
@@ -31,7 +31,7 @@ void Game::intro() {
 	appWindow->clear(Color(255, 255, 255));
 	tempTexture.loadFromFile("../img/intro.png");
 	tempSprite.setTexture(tempTexture);
-	tempSprite.setScale(Vector2f(0.25f, 0.25f));
+	tempSprite.setScale(Vector2f(0.2f, 0.2f));
 	tempSprite.setPosition(sf::Vector2f(0, 0));
 	appWindow->draw(tempSprite);
 	appWindow->display();
@@ -43,7 +43,7 @@ void Game::intro() {
 		s = std::to_string(23 - i);
 		tempTexture.loadFromFile("../img/" + s + ".png");
 		tempSprite.setTexture(tempTexture);
-		tempSprite.setScale(Vector2f(0.35f, 0.35f));
+		tempSprite.setScale(Vector2f(0.25f, 0.25f));
 		tempSprite.setPosition(sf::Vector2f(50, 100));
 		appWindow->draw(tempSprite);
 		appWindow->display();
@@ -70,9 +70,9 @@ void Game::enterName() {
 
 	textName.setFont(font);
 	textName.setCharacterSize(30);
-	textName.setPosition(100, 300);
+	textName.setPosition(50, 300);
 
-	hello.setCharacterSize(50);
+	hello.setCharacterSize(40);
 	hello.setString(L"Witaj, wpisz swoje imiê  \nnastêpnie naciœnij enter aby rozpocz¹æ grê");
 	hello.setPosition(100, 100);
 	hello.setFont(font);

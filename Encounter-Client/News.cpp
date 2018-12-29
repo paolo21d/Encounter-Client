@@ -18,14 +18,15 @@ ostream& operator<<(ostream& os, const NewsExplore& x) {
 
 sf::Packet& operator<<(sf::Packet& pckt, const NewsExplore& x) {
 	pckt << x.gameMode;
-	for (int i : {0, 1, 2, 3}) pckt << x.adjacent[i];
+	for (int i : {0, 1, 2, 3})
+		pckt << x.adjacent[i];
 	pckt << x.positionX << x.positionY;
+	pckt << x.oponentLocationId << x.oponentX << x.oponentY;
 
 	return pckt;
 }
 
-sf::Packet & operator >> (sf::Packet & pckt, NewsExplore & x)
-{
+sf::Packet & operator >> (sf::Packet & pckt, NewsExplore & x) {
 	int mode;
 	pckt >> mode;
 	x.gameMode = static_cast <Mode> (mode);
@@ -39,43 +40,32 @@ sf::Packet & operator >> (sf::Packet & pckt, NewsExplore & x)
 	for (int i : {0, 1, 2, 3}) pckt >> x.adjacent[i];
 	pckt >> x.positionX;
 	pckt >> x.positionY;
+	pckt >> x.oponentLocationId;
+	pckt >> x.oponentX;
+	pckt >> x.oponentY;
 	return pckt;
 }
 
-sf::Packet & operator<<(sf::Packet & pckt, const NewsDeal & x)
-{
+sf::Packet & operator<<(sf::Packet & pckt, const NewsDeal & x) {
 	// TODO: insert return statement here
 	return pckt;
 }
 
-sf::Packet & operator >> (sf::Packet & pckt, NewsDeal & x)
-{
+sf::Packet & operator >> (sf::Packet & pckt, NewsDeal & x) {
 	// TODO: insert return statement here
 	return pckt;
 }
 
-sf::Packet & operator<<(sf::Packet & pckt, const NewsFight & x)
-{
+sf::Packet & operator<<(sf::Packet & pckt, const NewsFight & x) {
 	// TODO: insert return statement here
 	return pckt;
 }
 
-sf::Packet & operator >> (sf::Packet & pckt, NewsFight & x)
-{
+sf::Packet & operator >> (sf::Packet & pckt, NewsFight & x) {
 	// TODO: insert return statement here
 	return pckt;
 }
 
-
-NewsExplore::NewsExplore() {
-	gameMode = EXPLORE;
-	for (int i : {1, 2, 3, 4}) {
-		adjacent[i] = 0;
-	}
-	//positionX = positionY = 0;
-	positionX = 0;
-	positionY = 0;
-}
 
 NewsExplore::NewsExplore(Mode mode = EXPLORE, int posX = 0, int posY = 0) {
 	gameMode = mode;
@@ -85,4 +75,16 @@ NewsExplore::NewsExplore(Mode mode = EXPLORE, int posX = 0, int posY = 0) {
 	//positionX = positionY = 0;
 	positionX = posX;
 	positionY = posY;
+}
+
+NewsExplore::NewsExplore()
+{
+}
+
+NewsDeal::NewsDeal()
+{
+}
+
+NewsFight::NewsFight()
+{
 }
