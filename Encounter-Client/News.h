@@ -10,6 +10,7 @@
 enum Mode { EXPLORE, FIGHT, DEAL };
 
 struct NewsExplore {
+	NewsExplore();
 	NewsExplore(Mode mode, int posX, int posY);
 
 	/*const Character* firstFighter; //przerzucić do klasy game

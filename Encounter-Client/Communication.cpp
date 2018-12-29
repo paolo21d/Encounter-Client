@@ -2,6 +2,7 @@
 #include "Location.h"
 #include "Map.h"
 #include "News.h"
+#include "Game.h"
 #include <SFML\Network.hpp>
 #include <iostream>
 #include <fstream>
@@ -20,7 +21,7 @@ Communication::Communication() {
 Communication::~Communication() {
 }
 
-void Communication::startCommunication() {
+void Communication::startCommunication(Game &g) {
 	Socket::Status status = socket.connect(ip, 2003);
 
 	if (status != Socket::Done) {
@@ -94,5 +95,37 @@ void Communication::srData() {
 		sentPacket << msgClient;
 		socket.send(sentPacket);
 		++i;
+	}
+}
+
+void Communication::sendReceiveData(Game &game)
+{
+	NewsExplore nExploreRec;
+	NewsDeal nDealRec;
+	NewsFight nFightRec;
+	while (1) {
+		Packet receive, sent;
+		socket.receive(receive);
+		if (game.mode == EXPLORE) {
+			receive >> nExploreRec;
+		}
+		else if (game.mode == DEAL) {
+			receive >> nDealRec;
+		}
+		else if (game.mode == FIGHT) {
+			receive >> nFightRec;
+		}
+
+		//wysylaj dane
+		if (game.mode == EXPLORE) {
+			sent << nExploreRec;
+		}
+		else if (game.mode == DEAL) {
+			sent << nDealRec;
+		}
+		else if (game.mode == FIGHT) {
+			sent << nFightRec;
+		}
+		socket.send(sent);
 	}
 }

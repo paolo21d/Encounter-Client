@@ -10,9 +10,10 @@ class Communication
 public:
 	Communication();
 	~Communication();
-	void startCommunication();
+	void startCommunication(Game &g);
 	void receiveMap();
 	void srData();
+	void sendReceiveData(Game &game);
 	//void com();
 };
 

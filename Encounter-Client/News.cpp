@@ -67,6 +67,16 @@ sf::Packet & operator >> (sf::Packet & pckt, NewsFight & x)
 }
 
 
+NewsExplore::NewsExplore() {
+	gameMode = EXPLORE;
+	for (int i : {1, 2, 3, 4}) {
+		adjacent[i] = 0;
+	}
+	//positionX = positionY = 0;
+	positionX = 0;
+	positionY = 0;
+}
+
 NewsExplore::NewsExplore(Mode mode = EXPLORE, int posX = 0, int posY = 0) {
 	gameMode = mode;
 	for (int i : {1, 2, 3, 4}) {

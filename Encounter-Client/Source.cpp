@@ -16,7 +16,7 @@ int main()
 	}
 	Communication communication;
 	try {
-		communication.startCommunication();
+		communication.startCommunication(game);
 	}
 	catch (...) { //napisac komunikat ze nie mozna polaczyc a nie zamykac silowo
 		cout << "Connection Error - cannot connect" << endl;
@@ -25,7 +25,8 @@ int main()
 	}
 	//game.startGame();
 	try {
-		game.enterName();
+		//game.enterName();
+		game.startGame();
 	}
 	catch (...) {
 		cout << "Zamykam" << endl;

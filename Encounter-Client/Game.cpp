@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Communication.h"
 #include <iostream>
 #include <string>
 #include <SFML\Graphics.hpp>
@@ -11,6 +12,9 @@ using namespace std;
 
 Game::Game(){
 	appWindow = new RenderWindow(VideoMode(1114, 572, 32), "Encounter");
+	mode = EXPLORE;
+	squareHeight = 20;
+	squareHeight = 20;
 	//RenderWindow temp(VideoMode(1114, 572, 32), "Encounter");
 	//appWindow = temp;
 }
@@ -150,4 +154,85 @@ void Game::cannnotConnect() {
 void Game::startGame() {
 
 }
+
+void Game::explore() {
+	while (appWindow->isOpen()) {
+		Event event;
+		while (appWindow->pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				appWindow->close();
+				throw exception("0");
+			}
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
+				appWindow->close();
+				throw exception("0");
+			}
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Left) {
+				if (adjacent[3] == 1) { //nieinteraktywne
+					if((myX-1)*squareWidth / squareWidth != mySquareX)
+						continue;
+					myX--;
+				}
+				else if (adjacent[3] == 0) { //mozna wejsc na siasiadujace pole - puste
+					myX--;
+					//sprawdzenie czy sie przeszlo juz na sasiednie pole
+				}
+				else { //interaktywne
+
+				}
+			}
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Right) {
+				if (adjacent[1] == 1) { //nieinteraktywne
+					if ((myX + 1)*squareWidth / squareWidth != mySquareX)
+						continue;
+					myX++;
+				}
+				else if (adjacent[1] == 0) { //mozna wejsc na siasiadujace pole - puste
+					myX++;
+					//sprawdzenie czy sie przeszlo juz na sasiednie pole
+				}
+				else { //interaktywne
+
+				}
+			}
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Up) {
+				if (adjacent[0] == 1) { //nieinteraktywne
+					if ((myY - 1)*squareHeight / squareHeight != mySquareY)
+						continue;
+					myY--;
+				}
+				else if (adjacent[0] == 0) { //mozna wejsc na siasiadujace pole - puste
+					myY--;
+					//sprawdzenie czy przeszlo sie na sasiednie pole
+				}
+				else { //interaktywne
+
+				}
+			}
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Down) {
+				if (adjacent[2] == 1) { //nieinteraktywne
+					if ((myY + 1)*squareHeight / squareHeight != mySquareY)
+						continue;
+					myY++;
+				}
+				else if (adjacent[2] == 0) { //mozna wejsc na siasiadujace pole - puste
+					myY++;
+					//sprawdzenie czy przeszlo sie na sasiednie pole
+				}
+				else { //interaktywne
+
+				}
+			}
+		}
+	}
+}
+
+void Game::fight() {
+
+}
+
+void Game::deal() {
+
+}
+
 
