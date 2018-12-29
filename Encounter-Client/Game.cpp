@@ -244,7 +244,6 @@ void Game::drawExplore() {
 	bool paintedOpponent = false;
 	for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
 		Object *obj = *it;
-		Object* obj = *it;
 		/*if (obj->getVisibility() == false) //jezeli skrzynka lub mobek zostana odwiedzeni to s¹ oni usuwani z vecotr<Object*>objects w location
 			continue;*/
 		if (obj->getY() > mySquareY && !paintedHero) { //rysuj mojego bohatera w odpowiednim miejscu

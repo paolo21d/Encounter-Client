@@ -1,5 +1,5 @@
 #include "Map.h"
-
+#include "Card.h"
 
 Map::Map() {
 }
@@ -14,6 +14,10 @@ Map::~Map() {
 
 void Map::addLocation(Location & loc) {
 	locations.push_back(loc);
+}
+
+void Map::addCard(Card * card) {
+	allCards.push_back(card);
 }
 
 

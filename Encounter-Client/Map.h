@@ -12,6 +12,7 @@ public:
 	Map(unsigned x, unsigned y);
 	~Map();
 	void addLocation(Location & loc);
+	void addCard(Card *card);
 	//std::vector <Location>& getLocations();
 };
 

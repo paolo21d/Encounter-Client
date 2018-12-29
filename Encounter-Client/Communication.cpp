@@ -4,9 +4,6 @@
 #include "News.h"
 #include "Game.h"
 
-#include "Nature.h"
-#include "Chest.h"
-#include "Mob.h"
 
 #include <SFML\Network.hpp>
 #include <iostream>
@@ -109,7 +106,18 @@ void Communication::receiveMap() {
 		}
 		tempMap.addLocation(tempLocation);
 	}
-	
+	//przeslanie wszystkich kart
+	int cardSize;
+	int cardId;
+	string cardSrc;
+	Card* card;
+	packet2 >> cardSize; //przeslanie ile kart jest w sumie
+	for (int i = 0; i < cardSize; ++i) {
+		packet2 >> cardId;
+		packet2 >> cardSrc;
+		card = new Card(cardId, cardSrc); //tworzenie kart
+		tempMap.addCard(card);
+	}
 }
 
 void Communication::srData() {
