@@ -3,6 +3,8 @@
 #include <SFML/Window.hpp>
 #include <iostream>
 using namespace std;
+
+
 int main()
 {
 	Game game;

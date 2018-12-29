@@ -10,5 +10,6 @@ public:
 	Map(unsigned x, unsigned y);
 	~Map();
 	void addLocation(Location & loc);
+	//std::vector <Location>& getLocations();
 };
 

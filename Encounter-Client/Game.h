@@ -5,6 +5,11 @@
 #include <SFML\Window.hpp>
 #include <SFML\Graphics.hpp>
 
+const unsigned mapSizeX = 1000, mapSizeY = 550;
+const unsigned areaSizeX = 50, areaSizeY = 25;
+const unsigned squareHeight = mapSizeY / areaSizeY;
+const unsigned squareWidth = mapSizeX / areaSizeX;
+
 class Game {
 	sf::RenderWindow *appWindow;
 	Map worldMap;
@@ -14,7 +19,11 @@ class Game {
 					 //0-mozna wejsc, 1-pole nieinteraktywne, 2-pole interaktywne 
 	int myX, myY; //wspolrzedne gracza
 	int mySquareX, mySquareY; //wspolrzedne pola na ktorym sie znaduje
-	int squareHeight, squareWidth; //wysokosc i szerokosc pól
+	int opponentSquareX, opponentSquareY, opponentLocationId;
+	//int squareHeight, squareWidth; //wysokosc i szerokosc pól
+	Object* myHero;
+	Object* opponentHero;
+
 public:
 	Mode mode;
 
@@ -30,5 +39,7 @@ public:
 	void explore();
 	void fight();
 	void deal();
+
+	void drawExplore();
 };
 

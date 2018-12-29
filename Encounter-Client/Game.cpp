@@ -9,12 +9,11 @@
 using namespace sf;
 using namespace std;
 
-
 Game::Game(){
-	appWindow = new RenderWindow(VideoMode(1000, 550, 32), "Encounter");
+	appWindow = new RenderWindow(VideoMode(mapSizeX, mapSizeY, 32), "Encounter");
 	mode = EXPLORE;
-	squareHeight = 20;
-	squareHeight = 20;
+	//squareHeight = 20;
+	//squareHeight = 20;
 	//RenderWindow temp(VideoMode(1114, 572, 32), "Encounter");
 	//appWindow = temp;
 }
@@ -223,6 +222,8 @@ void Game::explore() {
 
 				}
 			}
+
+			drawExplore();
 		}
 	}
 }
@@ -233,6 +234,55 @@ void Game::fight() {
 
 void Game::deal() {
 
+}
+
+void Game::drawExplore() {
+	currentLocation->drawBackground(appWindow);
+	Sprite sp;
+	float x, y;
+	bool paintedHero = false;
+	bool paintedOpponent = false;
+	for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
+		Object *obj = *it;
+		Object* obj = *it;
+		if (obj->getVisibility() == false)
+			continue;
+		if (obj->getY() > mySquareY && !paintedHero) {
+			sp = myHero->getSprite();
+			x = myX;
+			y = myY - sp.getLocalBounds().height;
+			sp.setPosition(Vector2f(x, y));
+			appWindow->draw(sp);
+		}
+		if (opponentLocationId == currentLocation->getId() && obj->getY() > opponentSquareY && !paintedOpponent) {
+			sp = opponentHero->getSprite();
+			x = opponentSquareX * squareWidth;
+			y = opponentSquareY * squareHeight - sp.getLocalBounds().height;
+			sp.setPosition(Vector2f(x, y));
+			appWindow->draw(sp);
+		}
+		sp = obj->getSprite();
+		x = obj->getX() * squareWidth;
+		y = obj->getY() * squareHeight - sp.getLocalBounds().height;
+		sp.setPosition(Vector2f(x, y));
+		appWindow->draw(sp);
+	}
+	if (!paintedHero) {
+		sp = myHero->getSprite();
+		x = myX;
+		y = myY - sp.getLocalBounds().height;
+		sp.setPosition(Vector2f(x, y));
+		appWindow->draw(sp);
+	}
+	if (opponentLocationId == currentLocation->getId() && !paintedOpponent) {
+		sp = opponentHero->getSprite();
+		x = opponentSquareX * squareWidth;
+		y = opponentSquareY * squareHeight - sp.getLocalBounds().height;
+		sp.setPosition(Vector2f(x, y));
+		appWindow->draw(sp);
+	}
+
+	appWindow->display();
 }
 
 

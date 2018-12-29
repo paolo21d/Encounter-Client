@@ -16,3 +16,4 @@ void Map::addLocation(Location & loc) {
 	locations.push_back(loc);
 }
 
+
