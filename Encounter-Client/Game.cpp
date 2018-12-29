@@ -245,16 +245,16 @@ void Game::drawExplore() {
 	for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
 		Object *obj = *it;
 		Object* obj = *it;
-		if (obj->getVisibility() == false)
-			continue;
-		if (obj->getY() > mySquareY && !paintedHero) {
+		/*if (obj->getVisibility() == false) //jezeli skrzynka lub mobek zostana odwiedzeni to s¹ oni usuwani z vecotr<Object*>objects w location
+			continue;*/
+		if (obj->getY() > mySquareY && !paintedHero) { //rysuj mojego bohatera w odpowiednim miejscu
 			sp = myHero->getSprite();
 			x = myX;
 			y = myY - sp.getLocalBounds().height;
 			sp.setPosition(Vector2f(x, y));
 			appWindow->draw(sp);
 		}
-		if (opponentLocationId == currentLocation->getId() && obj->getY() > opponentSquareY && !paintedOpponent) {
+		if (opponentLocationId == currentLocation->getId() && obj->getY() > opponentSquareY && !paintedOpponent) { //rysuj bohatera przeciwnka w opowiednim miejscu
 			sp = opponentHero->getSprite();
 			x = opponentSquareX * squareWidth;
 			y = opponentSquareY * squareHeight - sp.getLocalBounds().height;
@@ -267,14 +267,14 @@ void Game::drawExplore() {
 		sp.setPosition(Vector2f(x, y));
 		appWindow->draw(sp);
 	}
-	if (!paintedHero) {
+	if (!paintedHero) { //rysuj mojego bohatera na samym dole mapy
 		sp = myHero->getSprite();
 		x = myX;
 		y = myY - sp.getLocalBounds().height;
 		sp.setPosition(Vector2f(x, y));
 		appWindow->draw(sp);
 	}
-	if (opponentLocationId == currentLocation->getId() && !paintedOpponent) {
+	if (opponentLocationId == currentLocation->getId() && !paintedOpponent) { //rysuj bohatera przeciwnika na dole mapy
 		sp = opponentHero->getSprite();
 		x = opponentSquareX * squareWidth;
 		y = opponentSquareY * squareHeight - sp.getLocalBounds().height;

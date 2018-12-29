@@ -3,6 +3,11 @@
 #include "Map.h"
 #include "News.h"
 #include "Game.h"
+
+#include "Nature.h"
+#include "Chest.h"
+#include "Mob.h"
+
 #include <SFML\Network.hpp>
 #include <iostream>
 #include <fstream>
@@ -36,7 +41,7 @@ void Communication::startCommunication(Game &g) {
 void Communication::receiveMap() {
 	//odbieram grafiki i je zapisuje pod odpowiednia nazwa do folderu 'receiveImg'
 	//odbieram ramke z informacja ile grafik otrzymam
-	Packet packet1;
+	/*Packet packet1;
 	socket.receive(packet1);
 	unsigned GraphicsQuantity;
 	packet1 >> GraphicsQuantity;
@@ -53,12 +58,11 @@ void Communication::receiveMap() {
 		//moze dorzucic czysczenie pliku
 		file.write(buffer, buffSize);
 		file.close();
-	}
+	}*/
 	//odbieram ramke: 1. mapSizeX 2. mapSizeY 3. ilosc lokacji 4. areaSizeX 5. areaSizeY 6. po kolei lokacje czyli najpierw id a potem src
 	Packet packet2;
 	socket.receive(packet2);
 	unsigned mapX, mapY, areaX, areaY, vecSize;
-	//Location tempLocation;
 	string locationSrc;
 	int locId;
 
@@ -71,11 +75,36 @@ void Communication::receiveMap() {
 	packet2 >> areaY;
 	Location::areaSizeX = areaX;
 	Location::areaSizeY = areaY;
-	for (int i = 0; i < vecSize; ++i) {
+
+	int objId, objX, objY;
+	string objSrc;
+	int objSize; //ilosc obiektow wewnatrz danej lokacji
+	int objType; //typ objektu: 0-Dealer, 1-Nature, 2-Mob, 3-Chest
+	for (int i = 0; i < vecSize; ++i) { //przesy³anie lokacji
 		packet2 >> locId;
 		packet2 >> locationSrc;
-		//dorzuciæ wysy³anie co znajduje sie na lokacji
 		Location tempLocation(locId, locationSrc);
+		packet2 >> objSize;
+		//wysy³anie co znajduje sie na lokacji czyli objectow
+		for (int i = 0; i < objSize; ++i) {
+			packet2 >> objId;
+			packet2 >> objX;
+			packet2 >> objY;
+			packet2 >> objSrc;
+			packet2 >> objType;
+			if (objType == 0) { //dealer
+				//pisac
+			}
+			else if (objType == 1) { //Nature
+				Object* obj = new Nature(); //pisac
+			}
+			else if (objType == 2) { //Mob
+				//pisac
+			}
+			else if (objType == 3) { //Chest
+
+			}
+		}
 		tempMap.addLocation(tempLocation);
 	}
 	

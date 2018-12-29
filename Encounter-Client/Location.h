@@ -5,6 +5,7 @@
 class Location {
 	int id;
 	std::string srcTexture;
+
 	sf::Texture locationTexture;
 	sf::Sprite locationSprite;
 	
@@ -17,7 +18,8 @@ public:
 	Location(int id, std::string src);
 	~Location();
 
-	void draw(sf::RenderWindow *appWindow);
+	//void draw(sf::RenderWindow *appWindow);
+	void addObject(Object *obj);
 	void drawBackground(sf::RenderWindow *appWindow);
 	int getId();
 };

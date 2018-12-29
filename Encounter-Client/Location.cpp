@@ -24,13 +24,13 @@ Location::~Location()
 {
 }
 
-void Location::draw(sf::RenderWindow * appWindow) {
+/*void Location::draw(sf::RenderWindow * appWindow) {
 	Sprite sp;
 	float x, y;
 	for (auto it = objects.begin(); it != objects.end(); it++) {
 		Object* obj = *it;
-		if (obj->getVisibility() == false)
-			continue;
+		//if (obj->getVisibility() == false)
+		//	continue;
 
 		sp = obj->getSprite();
 		x = obj->getX();
@@ -38,6 +38,10 @@ void Location::draw(sf::RenderWindow * appWindow) {
 		sp.setPosition(Vector2f(x, y));
 		appWindow->draw(sp);
 	}
+}*/
+
+void Location::addObject(Object * obj) {
+	objects.push_back(obj);
 }
 
 void Location::drawBackground(sf::RenderWindow * appWindow) {

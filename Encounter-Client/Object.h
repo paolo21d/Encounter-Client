@@ -3,15 +3,17 @@
 class Object {
 	std::string srcName;
 	int id;
+	int posX, posY;
+
+	//bool visibility;
 	sf::Texture texture;
 	sf::Sprite sprite;
-	int posX, posY;
-	bool visibility;
 public:
 	Object() {
 		//texture.loadFromFile("../receiveImg/" + srcName);
-		visibility = true;
+		//visibility = true;
 	}
+	Object(std::string n, int id_, int posX_, int posY_);
 	~Object();
 	void setTexture();
 	void setSprite();
@@ -19,6 +21,6 @@ public:
 	sf::Sprite getSprite();
 	int getX();
 	int getY();
-	bool getVisibility();
+	//bool getVisibility();
 };
 

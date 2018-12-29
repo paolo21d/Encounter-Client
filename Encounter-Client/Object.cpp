@@ -2,6 +2,15 @@
 
 
 
+Object::Object(std::string n, int id_, int posX_, int posY_) {
+	srcName = n;
+	id = id_;
+	posX = posX_;
+	posY = posY_;
+	texture.loadFromFile("../receiveImg/" + srcName);
+	sprite.setTexture(texture);
+}
+
 Object::~Object()
 {
 }

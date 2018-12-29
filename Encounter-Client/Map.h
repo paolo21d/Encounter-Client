@@ -1,8 +1,10 @@
 #pragma once
 #include "Location.h"
+#include "Card.h"
 #include <vector>
 class Map {
 	std::vector <Location> locations;
+	std::vector <Card*> allCards;
 	unsigned mapSizeX;
 	unsigned mapSizeY;
 public:
