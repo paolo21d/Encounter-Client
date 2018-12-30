@@ -108,14 +108,17 @@ void Communication::receiveMap() {
 	}
 	//przeslanie wszystkich kart
 	int cardSize;
-	int cardId;
-	string cardSrc;
+	int cardId, cardCostMana;
+	string cardSrc, cardName, cardDescription;
 	Card* card;
 	packet2 >> cardSize; //przeslanie ile kart jest w sumie
 	for (int i = 0; i < cardSize; ++i) {
 		packet2 >> cardId;
 		packet2 >> cardSrc;
-		card = new Card(cardId, cardSrc); //tworzenie kart
+		packet2 >> cardName;
+		packet2 >> cardDescription;
+		packet2 >> cardCostMana;
+		card = new Card(cardId, cardSrc, cardName, cardDescription, cardCostMana); //tworzenie kart
 		tempMap.addCard(card);
 	}
 }
