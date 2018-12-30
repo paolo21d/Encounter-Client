@@ -88,7 +88,7 @@ void Communication::receiveMap() {
 			packet2 >> objX;
 			packet2 >> objY;
 			packet2 >> objSrc;
-			packet2 >> objType;
+			//packet2 >> objType;
 			Object* obj = new Object(objSrc, objId, objX, objY);
 			tempLocation.addObject(obj);
 			/*if (objType == 0) { //dealer
