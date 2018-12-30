@@ -2,11 +2,13 @@
 #include "Object.h"
 class Character : public Object
 {
+public:
 	int strength;
 	int intelligence;
 	int vitality;
 	int gold;
-public:
+	int hp;
+
 	Character();
 	~Character();
 };

@@ -2,8 +2,12 @@
 
 
 
-Character::Character()
-{
+Character::Character() {
+	strength = 0;
+	intelligence = 0;
+	vitality = 0;
+	gold = 0;
+	hp = 0;
 }
 
 

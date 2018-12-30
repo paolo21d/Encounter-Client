@@ -2,6 +2,7 @@
 #include "Map.h"
 #include "News.h"
 #include "Location.h"
+#include "Character.h"
 #include <SFML\Window.hpp>
 #include <SFML\Graphics.hpp>
 
@@ -9,9 +10,10 @@ const unsigned mapSizeX = 1000, mapSizeY = 550;
 const unsigned areaSizeX = 50, areaSizeY = 25;
 const unsigned squareHeight = mapSizeY / areaSizeY;
 const unsigned squareWidth = mapSizeX / areaSizeX;
-
+const unsigned infoWidth = 50;
 class Game {
 	sf::RenderWindow *appWindow;
+	sf::Font font;
 	Map worldMap;
 	Location* currentLocation;
 	//enum Mode { EXPLORE, FIGHT, DEAL };
@@ -21,8 +23,8 @@ class Game {
 	int mySquareX, mySquareY; //wspolrzedne pola na ktorym sie znaduje
 	int opponentSquareX, opponentSquareY, opponentLocationId;
 	//int squareHeight, squareWidth; //wysokosc i szerokosc pól
-	Object* myHero;
-	Object* opponentHero;
+	Character* myHero;
+	Character* opponentHero;
 
 public:
 	Mode mode;

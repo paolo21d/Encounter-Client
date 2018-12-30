@@ -10,8 +10,9 @@ using namespace sf;
 using namespace std;
 
 Game::Game(){
-	appWindow = new RenderWindow(VideoMode(mapSizeX, mapSizeY, 32), "Encounter");
+	appWindow = new RenderWindow(VideoMode(mapSizeX+infoWidth, mapSizeY, 32), "Encounter");
 	mode = EXPLORE;
+	font.loadFromFile("../img/Lato-Light.ttf");
 	//squareHeight = 20;
 	//squareHeight = 20;
 	//RenderWindow temp(VideoMode(1114, 572, 32), "Encounter");
@@ -39,7 +40,7 @@ void Game::intro() {
 	for (int i = 0; i <= 23; ++i) {
 		appWindow->clear(Color(255, 255, 255));
 		cout << "Laduje " << i << endl;
-		s = std::to_string(23 - i);
+		s = to_string(23 - i);
 		tempTexture.loadFromFile("../img/" + s + ".png");
 		tempSprite.setTexture(tempTexture);
 		tempSprite.setScale(Vector2f(0.25f, 0.25f));
@@ -64,8 +65,8 @@ void Game::intro() {
 void Game::enterName() {
 	Text textName, hello;
 	string name;
-	Font font;
-	font.loadFromFile("../img/Lato-Light.ttf");
+	//Font font;
+	//font.loadFromFile("../img/Lato-Light.ttf");
 
 	textName.setFont(font);
 	textName.setCharacterSize(30);
@@ -237,6 +238,7 @@ void Game::deal() {
 }
 
 void Game::drawExplore() {
+	appWindow->clear(Color(150, 150, 150));
 	currentLocation->drawBackground(appWindow);
 	Sprite sp;
 	float x, y;
@@ -280,6 +282,27 @@ void Game::drawExplore() {
 		sp.setPosition(Vector2f(x, y));
 		appWindow->draw(sp);
 	}
+	//rysowanie paska info
+	Text tHp, tStat, tGold;
+	tHp.setFont(font);
+	tStat.setFont(font);
+	tGold.setFont(font);
+	tHp.setFillColor(Color(255, 51, 51));
+	tStat.setFillColor(Color(255, 255, 255));
+	tGold.setFillColor(Color(255, 255, 77));
+	tHp.setCharacterSize(20);
+	tStat.setCharacterSize(20);
+	tGold.setCharacterSize(20);
+	tHp.setPosition(mapSizeX + 5, 50);
+	tGold.setPosition(mapSizeX + 5, 75);
+	tStat.setPosition(mapSizeX + 5, 100);
+	tHp.setString("HP: " + to_string(myHero->hp));
+	tStat.setString(L"Si³a: " + to_string(myHero->strength) + L"\nInteligencja: " + to_string(myHero->intelligence) + L"\nWitalnoœæ: " + to_string(myHero->vitality));
+	tGold.setString(L"Z³oto: " + to_string(myHero->gold));
+
+	appWindow->draw(tHp);
+	appWindow->draw(tGold);
+	appWindow->draw(tStat);
 
 	appWindow->display();
 }
