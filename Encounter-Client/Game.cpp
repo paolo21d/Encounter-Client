@@ -307,4 +307,19 @@ void Game::drawExplore() {
 	appWindow->display();
 }
 
+void Game::setMySquare(const int & x, const int & y) {
+	mySquareX = x;
+	mySquareY = y;
+}
+
+void Game::setOponentSquare(const int & x, const int & y, const int & loc) {
+	opponentSquareX = x;
+	opponentSquareY = y;
+	opponentLocationId = loc;
+}
+
+void Game::setAdjacent(int index, int val){
+	adjacent[index] = val;
+}
+
 

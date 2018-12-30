@@ -140,16 +140,23 @@ void Communication::srData() {
 	}
 }
 
-void Communication::sendReceiveData(Game &game)
-{
+void Communication::sendReceiveData(Game &game) { //ta meteoda jest odpalana jako osobny w¹tek - ona s³u¿y do komunikacji
 	NewsExplore nExploreRec;
 	NewsDeal nDealRec;
 	NewsFight nFightRec;
 	while (1) {
 		Packet receive, sent;
+		//odbierz dane
 		socket.receive(receive);
 		if (game.mode == EXPLORE) {
 			receive >> nExploreRec;
+			mut.lock();
+			game.mode = nExploreRec.gameMode;
+			game.setMySquare(nExploreRec.positionX, nExploreRec.positionY);
+			game.setOponentSquare(nExploreRec.oponentX, nExploreRec.oponentY, nExploreRec.oponentLocationId);
+			for (int i = 0; i < 4; ++i)
+				game.setAdjacent(i, nExploreRec.adjacent[i]);
+			mut.unlock();
 		}
 		else if (game.mode == DEAL) {
 			receive >> nDealRec;
@@ -160,6 +167,10 @@ void Communication::sendReceiveData(Game &game)
 
 		//wysylaj dane
 		if (game.mode == EXPLORE) {
+			mut.lock();
+			nExploreRec.positionX = game.mySquareX;
+			nExploreRec.positionY = game.mySquareY;
+			mut.unlock();
 			sent << nExploreRec;
 		}
 		else if (game.mode == DEAL) {

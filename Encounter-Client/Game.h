@@ -19,8 +19,8 @@ class Game {
 	//enum Mode { EXPLORE, FIGHT, DEAL };
 	int adjacent[4]; //0-góra, 1-prawa, 2-dó³, 3-lewa 
 					 //0-mozna wejsc, 1-pole nieinteraktywne, 2-pole interaktywne 
-	int myX, myY; //wspolrzedne gracza
-	int mySquareX, mySquareY; //wspolrzedne pola na ktorym sie znaduje
+	int myX, myY; //wspolrzedne gracza pixelowe
+	int mySquareX, mySquareY; //wspolrzedne pola na ktorym sie znaduje moj bohater
 	int opponentSquareX, opponentSquareY, opponentLocationId;
 	//int squareHeight, squareWidth; //wysokosc i szerokosc pól
 	Character* myHero;
@@ -43,5 +43,10 @@ public:
 	void deal();
 
 	void drawExplore();
+	void setMySquare(const int &x, const int &y);
+	void setOponentSquare(const int &x, const int &y, const int &loc);
+	void setAdjacent(int index, int val);
+
+	friend class Communication;
 };
 

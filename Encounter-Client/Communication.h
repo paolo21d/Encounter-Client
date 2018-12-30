@@ -2,12 +2,14 @@
 #include "Game.h"
 #include <SFML\Network.hpp>
 #include <thread>
+#include <mutex>
 class Communication
 {
 	sf::IpAddress ip;
 	sf::TcpSocket socket;
 	//sf::Packet packet;
 	std::thread *th;
+	mutex mut;
 public:
 	Communication();
 	~Communication();
