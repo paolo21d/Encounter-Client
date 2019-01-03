@@ -1,6 +1,7 @@
 #ifndef NEWS_H
 #define NEWS_H
 #include <iostream>
+#include <vector>
 #include <fstream>
 #include "Deck.h"
 #include "SFML/Network.hpp"
@@ -30,9 +31,11 @@ struct NewsDeal {
 	NewsDeal();
 
 	Mode gameMode;
-	double dealerFactor;
 	//Deck cardsForSale; //mozliwe ze zamienic na vector intow czyli id kart
-	std::vector <int> cardsId;
+	bool accept;
+	int areaToGoBackAfterDealX, areaToGoBackAfterDealY;
+	std::vector<int>cardsId;
+	int income; //==0 -na polu Deler; >0 -na polu Chest
 
 	friend sf::Packet& operator<<(sf::Packet& pckt, const NewsDeal& x);
 	friend sf::Packet& operator >> (sf::Packet& pckt, NewsDeal& x);
@@ -42,7 +45,7 @@ struct NewsFight {
 	NewsFight();
 
 	Mode gameMode;
-
+	
 	friend sf::Packet& operator<<(sf::Packet& pckt, const NewsFight& x);
 	friend sf::Packet& operator >> (sf::Packet& pckt, NewsFight& x);
 };

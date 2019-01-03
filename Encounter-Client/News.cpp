@@ -47,12 +47,28 @@ sf::Packet & operator >> (sf::Packet & pckt, NewsExplore & x) {
 }
 
 sf::Packet & operator<<(sf::Packet & pckt, const NewsDeal & x) {
-	// TODO: insert return statement here
+	pckt << x.gameMode;
+	pckt << static_cast<int>(x.cardsId.size()); //ilosc kart do przeslania
+	for (int i = 0; i < x.cardsId.size(); ++i)
+		pckt << x.cardsId[i];
+	pckt << x.areaToGoBackAfterDealX;
+	pckt << x.areaToGoBackAfterDealY;
+	pckt << x.accept;
+	pckt << x.income;		
 	return pckt;
 }
 
 sf::Packet & operator >> (sf::Packet & pckt, NewsDeal & x) {
-	// TODO: insert return statement here
+	int cardSize, mode;
+	pckt >> mode;
+	x.gameMode = static_cast<Mode>(mode);
+	pckt >> cardSize; //ilosc kart do przeslania
+	for (int i = 0; i < cardSize; ++i)
+		pckt >> x.cardsId[i];
+	pckt >> x.areaToGoBackAfterDealX;
+	pckt >> x.areaToGoBackAfterDealY;
+	pckt >> x.accept;
+	pckt >> x.income;
 	return pckt;
 }
 
