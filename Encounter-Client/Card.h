@@ -3,7 +3,7 @@
 #include <SFML\Graphics.hpp>
 class Card {
 	int id;
-	std::string srcName;
+	std::string srcName; //kazda karta ma miec grafike 40x80
 
 	std::string name;
 	std::string description;

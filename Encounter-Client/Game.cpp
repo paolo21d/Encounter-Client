@@ -307,6 +307,12 @@ void Game::drawExplore() {
 	appWindow->display();
 }
 
+void Game::drawFight() {
+}
+
+void Game::drawDeal() {
+}
+
 void Game::setMySquare(const int & x, const int & y) {
 	mySquareX = x;
 	mySquareY = y;

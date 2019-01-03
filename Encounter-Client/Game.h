@@ -43,6 +43,9 @@ public:
 	void deal();
 
 	void drawExplore();
+	void drawFight();
+	void drawDeal();
+
 	void setMySquare(const int &x, const int &y);
 	void setOponentSquare(const int &x, const int &y, const int &loc);
 	void setAdjacent(int index, int val);
