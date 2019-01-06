@@ -14,5 +14,7 @@ public:
 	void addLocation(Location & loc);
 	void addCard(Card *card);
 	//std::vector <Location>& getLocations();
+
+	friend class Communication;
 };
 

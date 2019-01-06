@@ -12,8 +12,8 @@
 using namespace std;
 using namespace sf;
 
-unsigned Location::areaSizeX = 0;
-unsigned Location::areaSizeY = 0;
+unsigned Location::areaSizeX = 50;
+unsigned Location::areaSizeY = 25;
 
 Communication::Communication() {
 	ip = IpAddress::getLocalAddress();
@@ -108,7 +108,7 @@ void Communication::receiveMap() {
 	}
 	//przeslanie wszystkich kart
 	int cardSize;
-	int cardId, cardCostMana;
+	int cardId, cardCostMana, cardDamage, cardCostGold;
 	string cardSrc, cardName, cardDescription;
 	Card* card;
 	packet2 >> cardSize; //przeslanie ile kart jest w sumie
@@ -118,7 +118,9 @@ void Communication::receiveMap() {
 		packet2 >> cardName;
 		packet2 >> cardDescription;
 		packet2 >> cardCostMana;
-		card = new Card(cardId, cardSrc, cardName, cardDescription, cardCostMana); //tworzenie kart
+		packet2 >> cardDamage;
+		packet2 >> cardCostGold;
+		card = new Card(cardId, cardSrc, cardName, cardDescription, cardCostMana, cardDamage, cardCostGold); //tworzenie kart
 		tempMap.addCard(card);
 	}
 }
@@ -160,6 +162,23 @@ void Communication::sendReceiveData(Game &game) { //ta meteoda jest odpalana jak
 		}
 		else if (game.mode == DEAL) {
 			receive >> nDealRec;
+			mut.lock();
+			game.mode = nDealRec.gameMode;
+			game.income = nDealRec.income;
+			game.accpet = nDealRec.accept;
+			for (unsigned i = 0; i < nDealRec.cardsId.size(); ++i) {
+				for (unsigned f = 0; f < game.worldMap.allCards.size(); ++f) {
+					if (nDealRec.cardsId[i] == game.worldMap.allCards[f]->id) { //dopasowane id karty
+						game.cardsExchange.push_back(game.worldMap.allCards[f]);
+					}
+				}
+			}
+			game.mySquareX = nDealRec.areaToGoBackAfterDealX;
+			game.mySquareY = nDealRec.areaToGoBackAfterDealY;
+			game.myX = game.mySquareX * 50 + 25; //sprawdzic
+			game.myY = game.mySquareY * 25 + 15; //sprawdzic
+
+			mut.unlock();
 		}
 		else if (game.mode == FIGHT) {
 			receive >> nFightRec;
@@ -174,6 +193,12 @@ void Communication::sendReceiveData(Game &game) { //ta meteoda jest odpalana jak
 			sent << nExploreRec;
 		}
 		else if (game.mode == DEAL) {
+			mut.lock();
+			nDealRec.cardsId.clear();
+			for (unsigned i = 0; i < game.pickedCards.size(); ++i)
+				nDealRec.cardsId.push_back(game.pickedCards[i]->id);
+
+			mut.unlock();
 			sent << nDealRec;
 		}
 		else if (game.mode == FIGHT) {

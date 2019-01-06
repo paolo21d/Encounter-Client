@@ -55,6 +55,9 @@ sf::Packet & operator<<(sf::Packet & pckt, const NewsDeal & x) {
 	pckt << x.areaToGoBackAfterDealY;
 	pckt << x.accept;
 	pckt << x.income;		
+	pckt << x.addStrength;
+	pckt << x.addIntelligence;
+	pckt << x.addVitality;
 	return pckt;
 }
 

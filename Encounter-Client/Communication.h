@@ -9,7 +9,7 @@ class Communication
 	sf::TcpSocket socket;
 	//sf::Packet packet;
 	std::thread *th;
-	mutex mut;
+	std::mutex mut;
 public:
 	Communication();
 	~Communication();

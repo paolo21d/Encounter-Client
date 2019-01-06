@@ -35,7 +35,8 @@ struct NewsDeal {
 	bool accept;
 	int areaToGoBackAfterDealX, areaToGoBackAfterDealY;
 	std::vector<int>cardsId;
-	int income; //==0 -na polu Deler; >0 -na polu Chest
+	int income; //==0 -na polu Dealer; >0 -na polu Chest
+	int addStrength, addIntelligence, addVitality;
 
 	friend sf::Packet& operator<<(sf::Packet& pckt, const NewsDeal& x);
 	friend sf::Packet& operator >> (sf::Packet& pckt, NewsDeal& x);
