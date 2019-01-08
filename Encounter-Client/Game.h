@@ -44,7 +44,7 @@ public:
 	~Game();
 	void intro();
 	void enterName();
-	void enterNameDraw(std::string &name, sf::Text &textName, sf::Text &hello);
+	void enterNameDraw(std::string &name, sf::Text &textName, sf::Text &hello, sf::Sprite &background);
 	void setMap(Map& recMap);
 	void cannnotConnect();
 
@@ -53,10 +53,11 @@ public:
 	void fight();
 	void deal();
 
-	void drawExplore();
+	void drawExplore(sf::Sprite &sidebar);
 	void drawFight();
-	void drawDeal(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold);
-
+	void drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold);
+	void drawDealChest(const bool *selectedCards, const unsigned &currentGold);
+	
 	void setMySquare(const int &x, const int &y);
 	void setOponentSquare(const int &x, const int &y, const int &loc);
 	void setAdjacent(int index, int val);
