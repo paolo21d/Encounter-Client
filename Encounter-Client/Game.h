@@ -5,6 +5,7 @@
 #include "Character.h"
 #include <SFML\Window.hpp>
 #include <SFML\Graphics.hpp>
+#include <mutex>
 
 const unsigned mapSizeX = 1000, mapSizeY = 550;
 const unsigned areaSizeX = 50, areaSizeY = 25;
@@ -16,6 +17,7 @@ const unsigned costStrength = 10;
 const unsigned costIntelligence = 15;
 const unsigned costVitality = 10;
 
+std::mutex mutBlockCommunication;
 class Game {
 	sf::RenderWindow *appWindow;
 	sf::Font font;
@@ -55,8 +57,8 @@ public:
 
 	void drawExplore(sf::Sprite &sidebar);
 	void drawFight();
-	void drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold);
-	void drawDealChest(const bool *selectedCards, const unsigned &currentGold);
+	void drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold, sf::Sprite &background);
+	void drawDealChest(const bool *selectedCards, const unsigned &currentGold, sf::Sprite &background);
 	
 	void setMySquare(const int &x, const int &y);
 	void setOponentSquare(const int &x, const int &y, const int &loc);

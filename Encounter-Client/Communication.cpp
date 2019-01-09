@@ -207,3 +207,37 @@ void Communication::sendReceiveData(Game &game) { //ta meteoda jest odpalana jak
 		socket.send(sent);
 	}
 }
+
+void Communication::exploreCommunication(Game & game) {
+	NewsExplore nExploreRec;
+	NewsDeal nDealRec;
+	NewsFight nFightRec;
+	while (1) {
+		Packet receive, sent;
+		//odbierz dane
+		socket.receive(receive);
+		if (game.mode == EXPLORE) {
+			receive >> nExploreRec;
+			mut.lock();
+			game.mode = nExploreRec.gameMode;
+			game.setMySquare(nExploreRec.positionX, nExploreRec.positionY);
+			game.setOponentSquare(nExploreRec.oponentX, nExploreRec.oponentY, nExploreRec.oponentLocationId);
+			for (int i = 0; i < 4; ++i)
+				game.setAdjacent(i, nExploreRec.adjacent[i]);
+			mut.unlock();
+			if (game.mode == DEAL) { //zaczal sie tryb dealowania
+				this_thread::sleep_for(1s);
+				mutBlockCommunication.lock();
+			}
+		}
+
+		//wysylaj dane
+		if (game.mode == EXPLORE) {
+			mut.lock();
+			nExploreRec.positionX = game.mySquareX;
+			nExploreRec.positionY = game.mySquareY;
+			mut.unlock();
+			sent << nExploreRec;
+		socket.send(sent);
+	}
+}

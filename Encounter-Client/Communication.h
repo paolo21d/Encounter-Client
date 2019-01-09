@@ -3,6 +3,7 @@
 #include <SFML\Network.hpp>
 #include <thread>
 #include <mutex>
+extern std::mutex mutBlockCommunication;
 class Communication
 {
 	sf::IpAddress ip;
@@ -17,6 +18,7 @@ public:
 	void receiveMap();
 	void srData();
 	void sendReceiveData(Game &game);
+	void exploreCommunication(Game &game);
 	//void com();
 };
 

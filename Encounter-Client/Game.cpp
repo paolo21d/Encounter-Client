@@ -180,6 +180,16 @@ void Game::explore() {
 
 	while (appWindow->isOpen()) {
 		Event event;
+		if (mode == DEAL) { //wlaczamy tryb delaowania
+			mutBlockCommunication.lock();
+			deal();
+
+			mutBlockCommunication.unlock();
+		} else if (mode == FIGHT) { //wlaczamy tryb walki
+			mutBlockCommunication.lock();
+
+			mutBlockCommunication.unlock();
+		}
 		while (appWindow->pollEvent(event)) {
 			if (event.type == Event::Closed) {
 				appWindow->close();
@@ -252,7 +262,40 @@ void Game::explore() {
 }
 
 void Game::fight() {
+	while (appWindow->isOpen()) {
+		Event event;
+		int pickedCardId;
+		int cardsOnHandId[5];
 
+		while (appWindow->pollEvent(event)) {
+			if (event.type == Event::Closed) {
+				appWindow->close();
+				throw exception("0");
+			}
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
+				appWindow->close();
+				throw exception("0");
+			}
+			else if (event.type == Event::MouseButtonPressed) {
+				Vector2i mousePosition = Mouse::getPosition(*appWindow);
+				int mouseX = mousePosition.x;
+				int mouseY = mousePosition.y;
+				if (mouseY >= 325 && mouseY <= 525) { //pasek moich kart
+					if (mouseX >= 175 && mouseX <= 325) { //1. karta
+
+					} else if (mouseX >= 350 && mouseX <= 500) { //2. karta
+
+					} else if (mouseX >= 525 && mouseX <= 675) { //3. karta
+
+					} else if (mouseX >= 700 && mouseX <= 850) { //4. karta
+
+					} else if (mouseX >= 875 && mouseX <= 1025) { //5. karta
+
+					}
+				}
+			}
+		}
+	}
 }
 
 void Game::deal() {
@@ -260,6 +303,11 @@ void Game::deal() {
 	for (unsigned i = 0; i < 5; ++i) selectedCard[i] = false;
 	unsigned addStrength = 0, addIntelligence = 0, addVitality = 0;
 	unsigned currentGold = myHero->gold;
+
+	Texture back;
+	back.loadFromFile("../receiveImg/background.png");
+	Sprite background;
+	background.setTexture(back);
 
 	if (income == 0) { //deal with Dealer
 		while (appWindow->isOpen()) {
@@ -288,7 +336,7 @@ void Game::deal() {
 								selectedCard[0] = false;
 								currentGold += cardsExchange[0]->costGold;
 							}
-							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold);
+							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 						}
 						else if (mouseX >= 250 && mouseY <= 400 && cardsExchange.size() >= 2) { //2. karta
 							if (selectedCard[1] == false && currentGold - cardsExchange[1]->costGold >= 0) { //zaznaczam karte
@@ -299,7 +347,7 @@ void Game::deal() {
 								selectedCard[1] = false;
 								currentGold += cardsExchange[1]->costGold;
 							}
-							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold);
+							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 						}
 						else if (mouseX >= 450 && mouseY <= 600 && cardsExchange.size() >= 3) { //3. karta
 							if (selectedCard[2] == false && currentGold - cardsExchange[2]->costGold >= 0) { //zaznaczam karte
@@ -310,7 +358,7 @@ void Game::deal() {
 								selectedCard[2] = false;
 								currentGold += cardsExchange[2]->costGold;
 							}
-							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold);
+							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 						}
 						else if (mouseX >= 650 && mouseY <= 800 && cardsExchange.size() >= 4) { //4. karta
 							if (selectedCard[3] == false && currentGold - cardsExchange[3]->costGold >= 0) { //zaznaczam karte
@@ -321,7 +369,7 @@ void Game::deal() {
 								selectedCard[3] = false;
 								currentGold += cardsExchange[3]->costGold;
 							}
-							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold);
+							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 						}
 						else if (mouseX >= 850 && mouseY <= 1000 && cardsExchange.size() >= 5) { //5. karta
 							if (selectedCard[4] == false && currentGold - cardsExchange[4]->costGold >= 0) { //zaznaczam karte
@@ -332,7 +380,7 @@ void Game::deal() {
 								selectedCard[4] = false;
 								currentGold += cardsExchange[4]->costGold;
 							}
-							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold);
+							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 						}
 					}
 					else if (mouseY >= 365 && mouseY <= 440) { //pasek statystyk
@@ -340,21 +388,21 @@ void Game::deal() {
 							if (currentGold - costStrength >= 0) {
 								currentGold -= costStrength;
 								addStrength++;
-								drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold);
+								drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 							}
 						}
 						else if (mouseX >= 425 && mouseX <= 475) { //zwieksz inteligencje
 							if (currentGold - costIntelligence >= 0) {
 								currentGold -= costIntelligence;
 								addIntelligence++;
-								drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold);
+								drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 							}
 						}
 						else if (mouseX >= 725 && mouseX <= 775) { //zwieksz vitality
 							if (currentGold - costVitality >= 0) {
 								currentGold -= costVitality;
 								addVitality++;
-								drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold);
+								drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 							}
 						}
 					}
@@ -371,7 +419,7 @@ void Game::deal() {
 	else { //deal with Chest
 		while (appWindow->isOpen()) {
 			Event event;
-			drawDealChest(selectedCard, currentGold);
+			drawDealChest(selectedCard, currentGold, background);
 			while (appWindow->pollEvent(event)) {
 				if (event.type == Event::Closed) {
 					appWindow->close();
@@ -394,6 +442,7 @@ void Game::deal() {
 
 				}
 			}
+			drawDealChest(selectedCard, currentGold, background);
 		}
 	}
 	
@@ -473,8 +522,9 @@ void Game::drawExplore(Sprite &sidebar) {
 void Game::drawFight() {
 }
 
-void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold) {
+void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold, Sprite &background) {
 	appWindow->clear(Color(153, 51, 51));
+	appWindow->draw(background);
 	Sprite sp;
 	RectangleShape backCard(sf::Vector2f(160, 210));
 	backCard.setFillColor(Color(255, 223, 0));
@@ -599,8 +649,9 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	appWindow->display();
 }
 
-void Game::drawDealChest(const bool * selectedCards, const unsigned & currentGold) {
+void Game::drawDealChest(const bool * selectedCards, const unsigned & currentGold, Sprite &background) {
 	appWindow->clear(Color(153, 51, 51));
+	appWindow->draw(background);
 	Sprite sp;
 	RectangleShape backCard(sf::Vector2f(160, 210));
 	backCard.setFillColor(Color(255, 223, 0));
