@@ -18,11 +18,13 @@ public:
 	~Communication();
 	void startCommunication(Game &g);
 	void receiveMap();
+
 	void srData();
 	void sendReceiveData(Game &game);
 	//nowe podjescie w dol |
 	void startExploreCommunicationInOnotherThread(Game &game); // //Najpierw odbiera NewsExplore, nastepnie wysy³a NewsExplore, ustawia dane pola game
 	void exploreCommunication(Game &game);
+	void exitCommunication();
 
 	void sendExploreNews(const NewsExplore &news);
 	void sendDealNews(const NewsDeal &news);

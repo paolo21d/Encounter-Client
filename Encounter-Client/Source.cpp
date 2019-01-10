@@ -9,7 +9,7 @@ int main()
 {
 	Communication communication;
 	Game game(&communication);
-	game.intro();
+	/*game.intro();
 	try {
 		game.enterName();
 	}
@@ -25,13 +25,13 @@ int main()
 		game.cannnotConnect();
 		return -2;
 	}
-	//game.startGame();
+	game.startGame();*/
 	try {
-		//game.enterName();
 		game.startGame();
 	}
 	catch (...) {
 		cout << "Zamykam" << endl;
+		communication.exitCommunication();
 		return 0;
 	}
 	return 0;

@@ -232,15 +232,11 @@ void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsE
 			//mut.unlock();
 
 			if (game.mode == DEAL) { //zaczal sie tryb dealowania
+				mut.unlock();
 				return; //zamykanie watku
-				/*this_thread::sleep_for(1s);
-				mutBlockCommunication.lock();
-				mutBlockCommunication.unlock();*/
 			} else if (game.mode == FIGHT) { //zaczal sie tryb walki
+				mut.unlock();
 				return; //zamykanie watku
-				/*this_thread::sleep_for(1s);
-				mutBlockCommunication.lock();
-				mutBlockCommunication.unlock();*/
 			}
 		}
 		mut.unlock();
@@ -256,6 +252,10 @@ void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsE
 		}
 		mut.unlock();
 	}
+}
+
+void Communication::exitCommunication() {
+	socket.disconnect();
 }
 
 void Communication::sendExploreNews(const NewsExplore & news) {

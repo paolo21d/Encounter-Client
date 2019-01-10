@@ -3,16 +3,19 @@
 #include "News.h"
 #include <iostream>
 #include <string>
+#include <thread>
+#include <chrono>
 #include <SFML\Graphics.hpp>
 #include <SFML\Network.hpp>
 #include <SFML\Window.hpp>
 
 using namespace sf;
 using namespace std;
-
+/////////////////////////////////////moj zlowy kolor: 212, 175, 55
 Game::Game(){
 	appWindow = new RenderWindow(VideoMode(mapSizeX+infoWidth, mapSizeY, 32), "Encounter");
 	mode = EXPLORE;
+	endGame = 0;
 	//font.loadFromFile("../img/Lato-Light.ttf");
 	font.loadFromFile("../img/Charm-Regular.ttf");
 	blockDealConnect = false;
@@ -163,8 +166,24 @@ void Game::cannnotConnect() {
 	}
 }
 
-void Game::startGame() {
-
+int Game::startGame() {
+	intro();
+	try {
+		enterName();
+	} catch (...) {
+		cout << "Zamykam" << endl;
+		throw;
+	}
+	try {
+		communication->startCommunication(*this);
+	} catch (...) { //napisac komunikat ze nie mozna polaczyc a nie zamykac silowo
+		cout << "Connection Error - cannot connect" << endl;
+		cannnotConnect();
+		throw;
+	}
+	explore();
+	communication->exitCommunication();
+	return 0;
 }
 
 void Game::explore() {
@@ -178,16 +197,12 @@ void Game::explore() {
 
 	while (appWindow->isOpen()) {
 		Event event;
-		if (mode == DEAL) { //wlaczamy tryb delaowania
-			//mutBlockCommunication.lock();
+		if (mode == DEAL) { //wlaczamy tryb dealowania
 			deal();
 			communication->startExploreCommunicationInOnotherThread(*this);
-			//mutBlockCommunication.unlock();
 		} else if (mode == FIGHT) { //wlaczamy tryb walki
-			//mutBlockCommunication.lock();
 			fight();
 			communication->startExploreCommunicationInOnotherThread(*this);
-			//mutBlockCommunication.unlock();
 		}
 		while (appWindow->pollEvent(event)) {
 			if (event.type == Event::Closed) {
@@ -247,30 +262,78 @@ void Game::explore() {
 			}
 
 			drawExplore(sidebar);
+		}//while obslugi eventow
+		if (endGame != 0) { //konczymy gre
+			string infoEndGame;
+			if (endGame == 1) { //przegralem w walce
+				//ekran koñca gry
+				infoEndGame = "Koniec gry. Przegra³eœ...";
+			} else if (endGame == 2) { //wygralem z przeciwnikiem
+				//ekran koñca gry	
+				infoEndGame = "Wygra³eœ! Przeciwnik zosta³ pokonany";
+			} else if (endGame == 3) { //przeciwnik siê roz³¹czy³
+				//ekran koñca gry
+				infoEndGame = "Koniec gry. Przeciwnik roz³¹czy³ siê...";
+			}
+			drawEndGame(infoEndGame);
+			while (appWindow->isOpen()) {
+				Event e;
+				while (appWindow->pollEvent(e)) {
+					if (e.type == Event::Closed) {
+						appWindow->close();
+						//throw exception("0");
+						return;
+					} else if (e.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
+						appWindow->close();
+						//throw exception("0");
+						return;
+					}
+				}
+			}
 		}
 	}
 }
 
 void Game::fight() {
+	bool clickedCard = false;
 	Texture back;
 	back.loadFromFile("../receiveImg/background.png");
 	Sprite background;
 	background.setTexture(back);
-	
+	Card* opponentPickedCard = nullptr;
+	Text opponentMove;
+	setText(opponentMove, 30, 212, 175, 55);
+	opponentMove.setString(L"Czekam na ruch przeciwnika...");
+	opponentMove.setPosition(350, 250);
+
 	NewsFight news;
 	news.gameMode = FIGHT;
 	communication->sendFightNews(news); //potwierdzenie trybu fight od klienta
-	//odebrac fight news
+	///odebrac fight news inicjalizuj¹cy
 	news = communication->receiveFightNews();
-	myCardsOnHand.clear();
-	for (auto i = 0; i < news.cardAmount[0]; ++i) { //wrzucenie kart ktore ja mam do myCardsOnHand
-		for (unsigned f = 0; f < worldMap.allCards.size(); ++f) {
-			if (news.cardsId[0][i] == worldMap.allCards[f]->id) { //dopasowane id karty
-				myCardsOnHand.push_back(worldMap.allCards[f]);
-			}
+	setCardsOnHand(news);
+	drawFightHideOpponentCard(background, news);//narysowanie
+	
+	news = communication->receiveFightNews(); //odebranie juz pierwszego konkretnego
+	setCardsOnHand(news);
+	if (news.chosenCard != -1) { //zaczynal przeciwnik czyli wyswietl jego karte
+		drawFightHideOpponentCard(background, news);
+		for (auto i = 0; i < worldMap.allCards.size(); ++i) { //wybrana karta przez oponenta
+			if (news.chosenCard == worldMap.allCards[i]->id)
+				opponentPickedCard = worldMap.allCards[i];
 		}
+		Sprite sp = opponentPickedCard->sprite;
+		sp.setPosition(400, 200);
+		appWindow->draw(sp);
+		appWindow->display();
+		this_thread::sleep_for(chrono::milliseconds(1000));
+		if (news.endFight != 0) { //koniec walki, ktos wygral juz teraz
+			mode = EXPLORE;
+			return;
+		}
+	} else { //ja zaczynam | chosenCard==-1
+		drawFightHideOpponentCard(background, news);
 	}
-
 
 	while (appWindow->isOpen()) {
 		Event event;
@@ -289,18 +352,59 @@ void Game::fight() {
 				int mouseY = mousePosition.y;
 				if (mouseY >= 325 && mouseY <= 525) { //pasek moich kart
 					if (mouseX >= 175 && mouseX <= 325 && myCardsOnHand.size() >= 1) { //1. karta
-
+						if (news.mana[0] < myCardsOnHand[0]->costMana) continue;
+						news.chosenCard = myCardsOnHand[0]->id;
+						clickedCard = true;
 					} else if (mouseX >= 350 && mouseX <= 500 && myCardsOnHand.size() >= 2) { //2. karta
-
+						if (news.mana[0] < myCardsOnHand[1]->costMana) continue;
+						news.chosenCard = myCardsOnHand[1]->id;
+						clickedCard = true;
 					} else if (mouseX >= 525 && mouseX <= 675 && myCardsOnHand.size() >= 3) { //3. karta
-
+						if (news.mana[0] < myCardsOnHand[2]->costMana) continue;
+						news.chosenCard = myCardsOnHand[2]->id;
+						clickedCard = true;
 					} else if (mouseX >= 700 && mouseX <= 850 && myCardsOnHand.size() >= 4) { //4. karta
-
+						if (news.mana[0] < myCardsOnHand[3]->costMana) continue;
+						news.chosenCard = myCardsOnHand[3]->id;
+						clickedCard = true;
 					} else if (mouseX >= 875 && mouseX <= 1025 && myCardsOnHand.size() >= 5) { //5. karta
-
+						if (news.mana[0] < myCardsOnHand[4]->costMana) continue;
+						news.chosenCard = myCardsOnHand[4]->id;
+						clickedCard = true;
 					}
 				}
 			}
+		}//while lapanie eventow
+		if (clickedCard == true) { //wybrano karte
+			clickedCard = false;
+			communication->sendFightNews(news); //wyslanie jaka karte wybralem
+			news = communication->receiveFightNews(); //odebranie reakcji po moim zagraniu
+			if (news.endFight != 0) { //zakonczona walka
+				//1-ja wygralem; 2-wygral przeciwnik
+				mode = EXPLORE;
+
+				return;
+			}
+			setCardsOnHand(news);
+			drawFightHideOpponentCard(background, news);
+			appWindow->draw(opponentMove);
+			appWindow->display();
+			news = communication->receiveFightNews(); //odebranie info o ruchu przeciwnika
+			if (news.endFight != 0) { //koniec walki
+				mode = EXPLORE;
+				return;
+			}
+			for (auto i = 0; i < worldMap.allCards.size(); ++i) { //wybrana karta przez oponenta
+				if (news.chosenCard == worldMap.allCards[i]->id)
+					opponentPickedCard = worldMap.allCards[i];
+			}
+			//wyswietlic przez chwile jaka karte wybral oponent
+			Sprite sp = opponentPickedCard->sprite;
+			sp.setPosition(400, 200);
+			appWindow->draw(sp);
+			appWindow->display();
+			sleep(milliseconds(1000));
+			drawFightHideOpponentCard(background, news);//narysowanie
 		}
 	}
 }
@@ -343,12 +447,10 @@ void Game::deal() {
 				if (event.type == Event::Closed) {
 					appWindow->close();
 					throw exception("0");
-				}
-				else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
+				} else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
 					appWindow->close();
 					throw exception("0");
-				}
-				else if (event.type == Event::MouseButtonPressed) {
+				} else if (event.type == Event::MouseButtonPressed) {
 					//sprawdzic w jakie miejsce klikniete !!!!
 					Vector2i mousePosition = Mouse::getPosition(*appWindow);
 					int mouseX = mousePosition.x;
@@ -358,8 +460,7 @@ void Game::deal() {
 							if (selectedCard[0] == false && currentGold - cardsExchange[0]->costGold >= 0) { //zaznaczam karte
 								selectedCard[0] = true;
 								currentGold -= cardsExchange[0]->costGold;
-							}
-							else if (selectedCard[0] == false) { //odznaczam karte
+							} else if (selectedCard[0] == false) { //odznaczam karte
 								selectedCard[0] = false;
 								currentGold += cardsExchange[0]->costGold;
 							}
@@ -369,8 +470,7 @@ void Game::deal() {
 							if (selectedCard[1] == false && currentGold - cardsExchange[1]->costGold >= 0) { //zaznaczam karte
 								selectedCard[1] = true;
 								currentGold -= cardsExchange[1]->costGold;
-							}
-							else if (selectedCard[1] == false) { //odznaczam karte
+							} else if (selectedCard[1] == false) { //odznaczam karte
 								selectedCard[1] = false;
 								currentGold += cardsExchange[1]->costGold;
 							}
@@ -380,19 +480,17 @@ void Game::deal() {
 							if (selectedCard[2] == false && currentGold - cardsExchange[2]->costGold >= 0) { //zaznaczam karte
 								selectedCard[2] = true;
 								currentGold -= cardsExchange[2]->costGold;
-							}
-							else if (selectedCard[2] == false) { //odznaczam karte
+							} else if (selectedCard[2] == false) { //odznaczam karte
 								selectedCard[2] = false;
 								currentGold += cardsExchange[2]->costGold;
 							}
 							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
-						}
+						} 
 						else if (mouseX >= 650 && mouseY <= 800 && cardsExchange.size() >= 4) { //4. karta
 							if (selectedCard[3] == false && currentGold - cardsExchange[3]->costGold >= 0) { //zaznaczam karte
 								selectedCard[3] = true;
 								currentGold -= cardsExchange[3]->costGold;
-							}
-							else if (selectedCard[3] == false) { //odznaczam karte
+							} else if (selectedCard[3] == false) { //odznaczam karte
 								selectedCard[3] = false;
 								currentGold += cardsExchange[3]->costGold;
 							}
@@ -402,8 +500,7 @@ void Game::deal() {
 							if (selectedCard[4] == false && currentGold - cardsExchange[4]->costGold >= 0) { //zaznaczam karte
 								selectedCard[4] = true;
 								currentGold -= cardsExchange[4]->costGold;
-							}
-							else if (selectedCard[4] == false) { //odznaczam karte
+							} else if (selectedCard[4] == false) { //odznaczam karte
 								selectedCard[4] = false;
 								currentGold += cardsExchange[4]->costGold;
 							}
@@ -448,6 +545,8 @@ void Game::deal() {
 							mode = EXPLORE;
 							NewsExplore nExp;
 							nExp.gameMode = EXPLORE;
+							nExp.positionX = mySquareX;
+							nExp.positionY = mySquareY;
 							communication->sendExploreNews(nExp);
 							return; //konczymy transakcje
 						}
@@ -489,6 +588,8 @@ void Game::deal() {
 							mode = EXPLORE;
 							NewsExplore nExp;
 							nExp.gameMode = EXPLORE;
+							nExp.positionX = mySquareX;
+							nExp.positionY = mySquareY;
 							communication->sendExploreNews(nExp);
 							return; //konczymy transakcje
 						}
@@ -599,12 +700,12 @@ void Game::drawFightHideOpponentCard(sf::Sprite & background, const NewsFight &n
 	appWindow->draw(avatar1);
 	appWindow->draw(avatar2);
 	//rysowanie odwrotow kart przeciwnika
-	for (int i = 0; i < 5; ++i) {
+	for (int i = 0; i < news.cardAmount[1]; ++i) {
 		cardBack.setPosition(175 + i * 175, 25);
 		appWindow->draw(cardBack);
 	}
 	//rysowanie moich kart
-	for (int i = 0; i < 5; ++i) {
+	for (int i = 0; i < myCardsOnHand.size(); ++i) {
 		myCard = myCardsOnHand[i]->sprite;
 		myCard.setPosition(175 + i * 175, 325);
 	}
@@ -647,6 +748,18 @@ void Game::drawFightShowOpponentCard(sf::Sprite & background, const NewsFight &n
 	appWindow->clear(Color(153, 51, 51));
 	appWindow->draw(background);
 	Sprite cardBack;
+}
+
+void Game::drawFightEnd(sf::Sprite & background, const NewsFight & news) {
+	appWindow->draw(background);
+	Text t;
+	setText(t, 40, 212, 175, 55);
+	t.setPosition(350, 240);
+	if (news.endFight == 1) {
+		t.setString(L"Wygra³eœ!");
+	} else if (news.endFight == 2) {
+		t.setString(L"Zosta³eœ pokonany...\nSpróbuj ponownie.");
+	}
 }
 
 void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold, Sprite &background) {
@@ -853,6 +966,15 @@ void Game::drawDealChest(const bool * selectedCards, const unsigned & currentGol
 	appWindow->display();
 }
 
+void Game::drawEndGame(string info) {
+	Text t;
+	setText(t, 50, 212, 175, 55);
+	t.setString(info);
+	t.setPosition(100, 200);
+	appWindow->draw(t);
+	appWindow->display();
+}
+
 void Game::setMySquare(const int & x, const int & y) {
 	mySquareX = x;
 	mySquareY = y;
@@ -868,10 +990,21 @@ void Game::setAdjacent(int index, int val){
 	adjacent[index] = val;
 }
 
-void Game::setText(sf::Text & text, const int & fontSize, const int & r, const int & g, const int & b) {
+inline void Game::setText(sf::Text & text, const int & fontSize, const int & r, const int & g, const int & b) {
 	text.setFont(font);
 	text.setCharacterSize(fontSize);
 	text.setFillColor(Color(r, g, b));
+}
+
+inline void Game::setCardsOnHand(const NewsFight & news) {
+	myCardsOnHand.clear();
+	for (auto i = 0; i < news.cardsId.size(); ++i) { //wrzucenie kart ktore ja mam do myCardsOnHand
+		for (unsigned f = 0; f < worldMap.allCards.size(); ++f) {
+			if (news.cardsId[i] == worldMap.allCards[f]->id) { //dopasowane id karty
+				myCardsOnHand.push_back(worldMap.allCards[f]);
+			}
+		}
+	}
 }
 
 

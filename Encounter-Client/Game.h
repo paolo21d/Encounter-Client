@@ -20,6 +20,7 @@ const unsigned costVitality = 10;
 //std::mutex mutBlockCommunication;
 class Game {
 	Communication *communication; //ten obiekt tez jest wywolywany w osobnym watku, pamietac o mutexach jak sie na nim dziala
+	int endGame; //0-trwa gra, 1-ja przegtralem (umarlem w walce), 2-ja wygralem(pokonalem przeciwnika), 3-przeciwnik uciekl(rozlaczyl sie)
 
 	sf::RenderWindow *appWindow;
 	sf::Font font;
@@ -56,7 +57,7 @@ public:
 	void setMap(Map& recMap);
 	void cannnotConnect();
 
-	void startGame();
+	int startGame();
 	void explore();
 	void fight();
 	void deal();
@@ -65,14 +66,17 @@ public:
 	void drawFight(sf::Sprite &background);
 	void drawFightHideOpponentCard(sf::Sprite &background, const NewsFight &news);
 	void drawFightShowOpponentCard(sf::Sprite &background, const NewsFight &news);
+	void drawFightEnd(sf::Sprite &background, const NewsFight &news);
 	void drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold, sf::Sprite &background);
 	void drawDealChest(const bool *selectedCards, const unsigned &currentGold, sf::Sprite &background);
-	
+	void drawEndGame(std::string info);
+
 	void setMySquare(const int &x, const int &y);
 	void setOponentSquare(const int &x, const int &y, const int &loc);
 	void setAdjacent(int index, int val);
 
-	void setText(sf::Text &text, const int &fontSize, const int &r, const int &g, const int &b);
+	inline void setText(sf::Text &text, const int &fontSize, const int &r, const int &g, const int &b);
+	inline void setCardsOnHand(const NewsFight &news);
 	friend class Communication;
 };
 

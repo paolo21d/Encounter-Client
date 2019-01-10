@@ -18,6 +18,7 @@ ostream& operator<<(ostream& os, const NewsExplore& x) {
 
 sf::Packet& operator<<(sf::Packet& pckt, const NewsExplore& x) {
 	pckt << x.gameMode;
+	pckt << x.endGame;
 	for (int i : {0, 1, 2, 3})
 		pckt << x.adjacent[i];
 	pckt << x.positionX << x.positionY;
@@ -30,6 +31,7 @@ sf::Packet & operator >> (sf::Packet & pckt, NewsExplore & x) {
 	int mode;
 	pckt >> mode;
 	x.gameMode = static_cast <Mode> (mode);
+	pckt >> x.endGame;
 	/*if (mode == 0) {
 	x.gameMode = EXPLORE;
 	} else if (mode == 1) {
@@ -76,21 +78,22 @@ sf::Packet & operator >> (sf::Packet & pckt, NewsDeal & x) {
 }
 
 sf::Packet & operator<<(sf::Packet & pckt, const NewsFight & x) {
-	pckt << x.youWon;
+	pckt << x.endFight;
 	pckt << x.strength[0] << x.strength[1];
 	pckt << x.intelligence[0] << x.intelligence[1];
 	pckt << x.vitality[0] << x.vitality[1];
-	pckt << static_cast<int>(x.cardsId[0].size()) << static_cast<int>(x.cardsId[1].size());
-	for (int i : {0, 1})
-		for (int j=0; j < x.cardAmount[i]; ++j)
-			pckt << x.cardsId[i][j];
+	pckt << x.hp[0] << x.hp[1];
+	pckt << x.mana[0] << x.mana[1];
+	pckt << static_cast<int>(x.cardsId.size());
+	for (int j = 0; j < x.cardAmount[0]; ++j)
+		pckt << x.cardsId[j];
 	pckt << x.chosenCard;
 
 	return pckt;
 }
 
 sf::Packet & operator >> (sf::Packet & pckt, NewsFight & x) {
-	pckt >> x.youWon;
+	pckt >> x.endFight;
 	pckt >> x.strength[0];
 	pckt >> x.strength[1];
 	pckt >> x.intelligence[0];
@@ -99,11 +102,12 @@ sf::Packet & operator >> (sf::Packet & pckt, NewsFight & x) {
 	pckt >> x.vitality[1];
 	pckt >> x.hp[0];
 	pckt >> x.hp[1];
+	pckt >> x.mana[0];
+	pckt >> x.mana[1];
 	pckt >> x.cardAmount[0];
 	pckt >> x.cardAmount[1];
-	for (int i : {0, 1})
-		for (int j = 0; j < x.cardAmount[i]; ++j)
-			pckt >> x.cardsId[i][j];
+	for (int j = 0; j < x.cardAmount[0]; ++j)
+		pckt >> x.cardsId[j];
 	pckt >> x.chosenCard;
 
 	return pckt;
