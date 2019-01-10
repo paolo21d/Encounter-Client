@@ -7,7 +7,8 @@ using namespace std;
 
 int main()
 {
-	Game game;
+	Communication communication;
+	Game game(&communication);
 	game.intro();
 	try {
 		game.enterName();
@@ -16,7 +17,6 @@ int main()
 		cout << "Zamykam" << endl;
 		return 0;
 	}
-	Communication communication;
 	try {
 		communication.startCommunication(game);
 	}

@@ -17,8 +17,10 @@ const unsigned costStrength = 10;
 const unsigned costIntelligence = 15;
 const unsigned costVitality = 10;
 
-std::mutex mutBlockCommunication;
+//std::mutex mutBlockCommunication;
 class Game {
+	Communication *communication; //ten obiekt tez jest wywolywany w osobnym watku, pamietac o mutexach jak sie na nim dziala
+
 	sf::RenderWindow *appWindow;
 	sf::Font font;
 	Map worldMap;
@@ -32,17 +34,21 @@ class Game {
 	//int squareHeight, squareWidth; //wysokosc i szerokosc pól
 	Character* myHero;
 	Character* opponentHero;
-	
+	//pola do dealowania
 	std::vector<Card *> cardsExchange; //otrzymana od serwera w trybie deale karty ktore posiada dealer lub chest
 	std::vector<Card *> pickedCards; //to bedzie wysylane do serwera w trybie deal (delaer lub chest) jako wybrane do 'zakupu' karty
 	int income;
 	bool accpet;
 	bool blockDealConnect; //taki mutex jakby
+	//pola do walki
+	std::vector<Card *>myCardsOnHand;
+
 
 public:
 	Mode mode;
 
 	Game();
+	Game(Communication *comptr);
 	~Game();
 	void intro();
 	void enterName();
@@ -56,7 +62,9 @@ public:
 	void deal();
 
 	void drawExplore(sf::Sprite &sidebar);
-	void drawFight();
+	void drawFight(sf::Sprite &background);
+	void drawFightHideOpponentCard(sf::Sprite &background, const NewsFight &news);
+	void drawFightShowOpponentCard(sf::Sprite &background, const NewsFight &news);
 	void drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold, sf::Sprite &background);
 	void drawDealChest(const bool *selectedCards, const unsigned &currentGold, sf::Sprite &background);
 	
@@ -64,6 +72,7 @@ public:
 	void setOponentSquare(const int &x, const int &y, const int &loc);
 	void setAdjacent(int index, int val);
 
+	void setText(sf::Text &text, const int &fontSize, const int &r, const int &g, const int &b);
 	friend class Communication;
 };
 

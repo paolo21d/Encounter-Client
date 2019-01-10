@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Communication.h"
+#include "News.h"
 #include <iostream>
 #include <string>
 #include <SFML\Graphics.hpp>
@@ -12,12 +13,17 @@ using namespace std;
 Game::Game(){
 	appWindow = new RenderWindow(VideoMode(mapSizeX+infoWidth, mapSizeY, 32), "Encounter");
 	mode = EXPLORE;
-	font.loadFromFile("../img/Lato-Light.ttf");
+	//font.loadFromFile("../img/Lato-Light.ttf");
+	font.loadFromFile("../img/Charm-Regular.ttf");
 	blockDealConnect = false;
 	//squareHeight = 20;
 	//squareHeight = 20;
 	//RenderWindow temp(VideoMode(1114, 572, 32), "Encounter");
 	//appWindow = temp;
+}
+
+Game::Game(Communication * comptr):Game() {
+	communication = comptr;
 }
 
 Game::~Game(){
@@ -71,17 +77,13 @@ void Game::enterName() {
 	Sprite background;
 	background.setTexture(back);
 	background.setPosition(0, 0);
-	//Font font;
-	//font.loadFromFile("../img/Lato-Light.ttf");
 
-	textName.setFont(font);
-	textName.setCharacterSize(30);
-	textName.setPosition(50, 300);
+	setText(textName, 30, 212, 175, 60);
+	textName.setPosition(200, 300);
 
-	hello.setCharacterSize(40);
+	setText(hello, 40, 212, 175, 60);
 	hello.setString(L"Witaj, wpisz swoje imiê  \nnastêpnie naciœnij enter aby rozpocz¹æ grê");
 	hello.setPosition(100, 100);
-	hello.setFont(font);
 
 	enterNameDraw(name, textName, hello, background);
 
@@ -134,13 +136,9 @@ void Game::setMap(Map & recMap) {
 }
 
 void Game::cannnotConnect() {
-	Text text;
-	Font font;
-	font.loadFromFile("../img/Lato-Light.ttf");
-	text.setFont(font);
-	text.setCharacterSize(40);
+	Text text;	
+	setText(text, 40, 212, 175, 55);
 	text.setPosition(100, 400);
-	text.setFillColor(Color(255, 255, 255));
 	text.setString(L"Nie mo¿na siê po³¹czyæ z serwerem!\nNaciœnij ESC");
 
 	Texture back;
@@ -181,49 +179,45 @@ void Game::explore() {
 	while (appWindow->isOpen()) {
 		Event event;
 		if (mode == DEAL) { //wlaczamy tryb delaowania
-			mutBlockCommunication.lock();
+			//mutBlockCommunication.lock();
 			deal();
-
-			mutBlockCommunication.unlock();
+			communication->startExploreCommunicationInOnotherThread(*this);
+			//mutBlockCommunication.unlock();
 		} else if (mode == FIGHT) { //wlaczamy tryb walki
-			mutBlockCommunication.lock();
-
-			mutBlockCommunication.unlock();
+			//mutBlockCommunication.lock();
+			fight();
+			communication->startExploreCommunicationInOnotherThread(*this);
+			//mutBlockCommunication.unlock();
 		}
 		while (appWindow->pollEvent(event)) {
 			if (event.type == Event::Closed) {
 				appWindow->close();
 				throw exception("0");
-			}
-			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
+			} else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
 				appWindow->close();
 				throw exception("0");
-			}
+			} 
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Left) {
 				if (adjacent[3] == 1) { //nieinteraktywne
 					if((myX-1)*squareWidth / squareWidth != mySquareX)
 						continue;
 					myX--;
-				}
-				else if (adjacent[3] == 0) { //mozna wejsc na siasiadujace pole - puste
+				} else if (adjacent[3] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myX--;
 					//sprawdzenie czy sie przeszlo juz na sasiednie pole
-				}
-				else { //interaktywne
+				} else { //interaktywne
 
 				}
-			}
+			} 
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Right) {
 				if (adjacent[1] == 1) { //nieinteraktywne
 					if ((myX + 1)*squareWidth / squareWidth != mySquareX)
 						continue;
 					myX++;
-				}
-				else if (adjacent[1] == 0) { //mozna wejsc na siasiadujace pole - puste
+				} else if (adjacent[1] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myX++;
 					//sprawdzenie czy sie przeszlo juz na sasiednie pole
-				}
-				else { //interaktywne
+				} else { //interaktywne
 
 				}
 			}
@@ -232,12 +226,10 @@ void Game::explore() {
 					if ((myY - 1)*squareHeight / squareHeight != mySquareY)
 						continue;
 					myY--;
-				}
-				else if (adjacent[0] == 0) { //mozna wejsc na siasiadujace pole - puste
+				} else if (adjacent[0] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myY--;
 					//sprawdzenie czy przeszlo sie na sasiednie pole
-				}
-				else { //interaktywne
+				} else { //interaktywne
 
 				}
 			}
@@ -246,12 +238,10 @@ void Game::explore() {
 					if ((myY + 1)*squareHeight / squareHeight != mySquareY)
 						continue;
 					myY++;
-				}
-				else if (adjacent[2] == 0) { //mozna wejsc na siasiadujace pole - puste
+				} else if (adjacent[2] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myY++;
 					//sprawdzenie czy przeszlo sie na sasiednie pole
-				}
-				else { //interaktywne
+				} else { //interaktywne
 
 				}
 			}
@@ -262,11 +252,28 @@ void Game::explore() {
 }
 
 void Game::fight() {
+	Texture back;
+	back.loadFromFile("../receiveImg/background.png");
+	Sprite background;
+	background.setTexture(back);
+	
+	NewsFight news;
+	news.gameMode = FIGHT;
+	communication->sendFightNews(news); //potwierdzenie trybu fight od klienta
+	//odebrac fight news
+	news = communication->receiveFightNews();
+	myCardsOnHand.clear();
+	for (auto i = 0; i < news.cardAmount[0]; ++i) { //wrzucenie kart ktore ja mam do myCardsOnHand
+		for (unsigned f = 0; f < worldMap.allCards.size(); ++f) {
+			if (news.cardsId[0][i] == worldMap.allCards[f]->id) { //dopasowane id karty
+				myCardsOnHand.push_back(worldMap.allCards[f]);
+			}
+		}
+	}
+
+
 	while (appWindow->isOpen()) {
 		Event event;
-		int pickedCardId;
-		int cardsOnHandId[5];
-
 		while (appWindow->pollEvent(event)) {
 			if (event.type == Event::Closed) {
 				appWindow->close();
@@ -281,15 +288,15 @@ void Game::fight() {
 				int mouseX = mousePosition.x;
 				int mouseY = mousePosition.y;
 				if (mouseY >= 325 && mouseY <= 525) { //pasek moich kart
-					if (mouseX >= 175 && mouseX <= 325) { //1. karta
+					if (mouseX >= 175 && mouseX <= 325 && myCardsOnHand.size() >= 1) { //1. karta
 
-					} else if (mouseX >= 350 && mouseX <= 500) { //2. karta
+					} else if (mouseX >= 350 && mouseX <= 500 && myCardsOnHand.size() >= 2) { //2. karta
 
-					} else if (mouseX >= 525 && mouseX <= 675) { //3. karta
+					} else if (mouseX >= 525 && mouseX <= 675 && myCardsOnHand.size() >= 3) { //3. karta
 
-					} else if (mouseX >= 700 && mouseX <= 850) { //4. karta
+					} else if (mouseX >= 700 && mouseX <= 850 && myCardsOnHand.size() >= 4) { //4. karta
 
-					} else if (mouseX >= 875 && mouseX <= 1025) { //5. karta
+					} else if (mouseX >= 875 && mouseX <= 1025 && myCardsOnHand.size() >= 5) { //5. karta
 
 					}
 				}
@@ -308,6 +315,26 @@ void Game::deal() {
 	back.loadFromFile("../receiveImg/background.png");
 	Sprite background;
 	background.setTexture(back);
+
+	NewsDeal news;
+	news.gameMode = DEAL;
+	communication->sendDealNews(news);
+	news = communication->receiveDealNews(); //odebranie calego info o kartach itp
+	mode = news.gameMode;
+	income = news.income;
+	accpet = news.accept;
+	for (unsigned i = 0; i < news.cardsId.size(); ++i) {
+		for (unsigned f = 0; f < worldMap.allCards.size(); ++f) {
+			if (news.cardsId[i] == worldMap.allCards[f]->id) { //dopasowane id karty
+				cardsExchange.push_back(worldMap.allCards[f]);
+			}
+		}
+	}
+	mySquareX = news.areaToGoBackAfterDealX;
+	mySquareY = news.areaToGoBackAfterDealY;
+	myX = mySquareX * 50 + 25; //sprawdzic
+	myY = mySquareY * 25 + 15; //sprawdzic
+
 
 	if (income == 0) { //deal with Dealer
 		while (appWindow->isOpen()) {
@@ -408,7 +435,21 @@ void Game::deal() {
 					}
 					else if (mouseY >= 480 && mouseY <= 520) { //pasek przyscisku accept
 						if (mouseX >= 800 && mouseX <= 950) { //przycisk akceptuj
-															  //wyslij juz DealNews koñcz¹cy/////////////////////////////////////////////////NAPISAC
+							news.gameMode = DEAL;
+							news.cardsId.clear();
+							for (auto i = 0; i < 5; ++i) {
+								if (selectedCard[i] == true) {
+									news.cardsId.push_back(cardsExchange[i]->id);
+								}
+							}
+							communication->sendDealNews(news);
+							//mozna dopisac ewentualnie jakies wysiwtlenie ze udalo sie zakupic te rzeczy
+							news = communication->receiveDealNews(); //pole news.accept
+							mode = EXPLORE;
+							NewsExplore nExp;
+							nExp.gameMode = EXPLORE;
+							communication->sendExploreNews(nExp);
+							return; //konczymy transakcje
 						}
 					}
 
@@ -417,9 +458,10 @@ void Game::deal() {
 		}
 	}
 	else { //deal with Chest
+		drawDealChest(selectedCard, currentGold, background); //rysuje tylko raz ekran dealowania z chest bo nic tam sie nie zmienia
 		while (appWindow->isOpen()) {
 			Event event;
-			drawDealChest(selectedCard, currentGold, background);
+			//drawDealChest(selectedCard, currentGold, background);
 			while (appWindow->pollEvent(event)) {
 				if (event.type == Event::Closed) {
 					appWindow->close();
@@ -436,13 +478,25 @@ void Game::deal() {
 					int mouseY = mousePosition.y;
 					if (mouseY >= 480 && mouseY <= 520) { //pasek przyscisku accept
 						if (mouseX >= 800 && mouseX <= 950) { //przycisk akceptuj
-															  //wyslij juz DealNews koñcz¹cy/////////////////////////////////////////////////NAPISAC
+							news.gameMode = DEAL;
+							news.cardsId.clear();
+							for (auto i = 0; i < 5; ++i) {
+								news.cardsId.push_back(cardsExchange[i]->id);
+							}
+							communication->sendDealNews(news);
+							//mozna dopisac ewentualnie jakies wysiwtlenie ze udalo sie zakupic te rzeczy
+							news = communication->receiveDealNews(); //pole news.accept
+							mode = EXPLORE;
+							NewsExplore nExp;
+							nExp.gameMode = EXPLORE;
+							communication->sendExploreNews(nExp);
+							return; //konczymy transakcje
 						}
 					}
 
 				}
 			}
-			drawDealChest(selectedCard, currentGold, background);
+			//drawDealChest(selectedCard, currentGold, background);
 		}
 	}
 	
@@ -453,7 +507,7 @@ void Game::drawExplore(Sprite &sidebar) {
 	currentLocation->drawBackground(appWindow);
 	appWindow->draw(sidebar);
 	Sprite sp;
-	float x, y;
+	int x, y;
 	bool paintedHero = false;
 	bool paintedOpponent = false;
 	for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
@@ -496,7 +550,7 @@ void Game::drawExplore(Sprite &sidebar) {
 	}
 	//rysowanie paska info
 	Text tHp, tStat, tGold;
-	tHp.setFont(font);
+	/*tHp.setFont(font);
 	tStat.setFont(font);
 	tGold.setFont(font);
 	tHp.setFillColor(Color(255, 51, 51));
@@ -504,7 +558,10 @@ void Game::drawExplore(Sprite &sidebar) {
 	tGold.setFillColor(Color(255, 255, 77));
 	tHp.setCharacterSize(20);
 	tStat.setCharacterSize(20);
-	tGold.setCharacterSize(20);
+	tGold.setCharacterSize(20);*/
+	setText(tHp, 20, 255, 51, 51);
+	setText(tStat, 20, 255, 255, 255);
+	setText(tGold, 20, 255, 255, 77); //moze byc color: 212, 175, 55
 	tHp.setPosition(mapSizeX + 5, 50);
 	tGold.setPosition(mapSizeX + 5, 75);
 	tStat.setPosition(mapSizeX + 5, 100);
@@ -519,7 +576,77 @@ void Game::drawExplore(Sprite &sidebar) {
 	appWindow->display();
 }
 
-void Game::drawFight() {
+void Game::drawFight(Sprite &background) {
+	appWindow->clear(Color(153, 51, 51));
+	appWindow->draw(background);
+	Sprite cardBack;
+}
+
+void Game::drawFightHideOpponentCard(sf::Sprite & background, const NewsFight &news) {
+	appWindow->clear(Color(153, 51, 51));
+	appWindow->draw(background);
+	Sprite cardBack, myCard;
+	Texture cb;
+	cb.loadFromFile("../receiveImg/reverse.png");
+	cardBack.setTexture(cb);
+	//rysowanie awatarow - napisac
+	Sprite avatar1, avatar2; //avatar1 - opponent, avatar2 - myHero
+	Texture tav1, tav2; //zaladowac obrazki z pliku
+	avatar1.setTexture(tav1);
+	avatar2.setTexture(tav2);
+	avatar1.setPosition(25, 25);
+	avatar2.setPosition(25, 375);
+	appWindow->draw(avatar1);
+	appWindow->draw(avatar2);
+	//rysowanie odwrotow kart przeciwnika
+	for (int i = 0; i < 5; ++i) {
+		cardBack.setPosition(175 + i * 175, 25);
+		appWindow->draw(cardBack);
+	}
+	//rysowanie moich kart
+	for (int i = 0; i < 5; ++i) {
+		myCard = myCardsOnHand[i]->sprite;
+		myCard.setPosition(175 + i * 175, 325);
+	}
+	//narysowanie statysyk (HP)
+	Text myHp, opHp;
+	setText(myHp, 25, 212, 175, 55);
+	setText(opHp, 25, 212, 175, 55);
+	/*myHp.setFont(font);
+	opHp.setFont(font);
+	myHp.setCharacterSize(25);
+	opHp.setCharacterSize(25);
+	myHp.setFillColor(Color(212, 175, 55));
+	opHp.setFillColor(Color(212, 175, 55));*/
+	myHp.setString("HP: " + to_string(news.hp[0]));
+	opHp.setString("HP: " + to_string(news.hp[1]));
+
+	myHp.setPosition(25, 350);
+	opHp.setPosition(25, 175);
+	appWindow->draw(myHp);
+	appWindow->draw(opHp);
+	
+	Text myStat, opStat;
+	setText(myStat, 12, 212, 175, 55);
+	setText(opStat, 12, 212, 175, 55);
+	myStat.setString(L"Str: " + to_string(news.strength[0]) + L"\nInt: " + to_string(news.intelligence[0]) + L"\nVit: " + to_string(news.vitality[0]));
+	opStat.setString(L"Str: " + to_string(news.strength[1]) + L"\nInt: " + to_string(news.intelligence[1]) + L"\nVit: " + to_string(news.vitality[1]));
+	myStat.setPosition(25, 300); //zmienic te wymiary!!!
+	opStat.setPosition(25, 230); //sprawdzic wymiary!!!!
+	appWindow->draw(myStat);
+	appWindow->draw(opStat);
+
+	//narysowanie info co ma zrobic gracz
+	Text info;
+	setText(info, 25, 212, 175, 55);
+
+	appWindow->display();
+}
+
+void Game::drawFightShowOpponentCard(sf::Sprite & background, const NewsFight &news) {
+	appWindow->clear(Color(153, 51, 51));
+	appWindow->draw(background);
+	Sprite cardBack;
 }
 
 void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold, Sprite &background) {
@@ -539,7 +666,7 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	}
 	/////// staty kart
 	Text tDamage, tCostGold, tCostMana;
-	tDamage.setFont(font);
+	/*tDamage.setFont(font);
 	tCostGold.setFont(font);
 	tCostMana.setFont(font);
 	tDamage.setFillColor(Color(255, 204, 204));
@@ -547,8 +674,11 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	tCostMana.setFillColor(Color(153, 204, 255));
 	tDamage.setCharacterSize(20);
 	tCostGold.setCharacterSize(20);
-	tCostMana.setCharacterSize(20);
-	for (int i = 0; i < cardsExchange.size(); ++i) { //rysuj staty karty pod ni¹
+	tCostMana.setCharacterSize(20);*/
+	setText(tDamage, 20, 255, 204, 204);
+	setText(tCostGold, 20, 255, 255, 153); //moze byc color: 212, 175, 55
+	setText(tCostMana, 20, 153, 204, 255);
+	for (auto i = 0; i < cardsExchange.size(); ++i) { //rysuj staty karty pod ni¹
 		tDamage.setPosition(50 + 200 * i, 245);
 		tCostGold.setPosition(50 + 200 * i, 275);
 		tCostMana.setPosition(50 + 200 * i, 305);
@@ -561,7 +691,7 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	}
 	/////// zakup statow
 	Text statName, statPoints, statCost, statPlus;
-	statName.setFont(font);
+	/*statName.setFont(font);
 	statName.setFillColor(Color(255, 255, 255));
 	statName.setCharacterSize(50);
 	statPoints.setFont(font);
@@ -572,7 +702,11 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	statCost.setCharacterSize(25);
 	statPlus.setFont(font);
 	statPlus.setFillColor(Color(255, 255, 255));
-	statPlus.setCharacterSize(50);
+	statPlus.setCharacterSize(50);*/
+	setText(statName, 50, 255, 255, 255);
+	setText(statPoints, 50, 255, 255, 255);
+	setText(statCost, 25, 255, 255, 255);
+	setText(statPlus, 50, 255, 255, 255);
 	statPlus.setString("+");
 	RectangleShape showStatRec(sf::Vector2f(50, 75));
 	showStatRec.setFillColor(Color(153, 153, 102));
@@ -628,9 +762,10 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	appWindow->draw(statCost);
 	/////// wyswietl ilosc golda
 	Text gold;
-	gold.setFont(font);
+	/*gold.setFont(font);
 	gold.setFillColor(Color(255, 255, 255));
-	gold.setCharacterSize(50);
+	gold.setCharacterSize(50);*/
+	setText(gold, 50, 255, 255, 255);
 	gold.setString(L"Masz z³ota: " + to_string(currentGold));
 	gold.setPosition(450, 480);
 	appWindow->draw(gold);
@@ -638,13 +773,14 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	RectangleShape accpetButton(sf::Vector2f(150, 40));
 	accpetButton.setFillColor(Color(38, 13, 13));
 	accpetButton.setPosition(800, 480);
-	Text accpet;
-	accpet.setFont(font);
+	Text accept;
+	/*accpet.setFont(font);
 	accpet.setFillColor(Color(255, 255, 255));
-	accpet.setCharacterSize(30);
-	accpet.setPosition(850, 485);
+	accpet.setCharacterSize(30);*/
+	setText(accept, 30, 255, 255, 255);
+	accept.setPosition(850, 485);
 	appWindow->draw(accpetButton);
-	appWindow->draw(accpet);
+	appWindow->draw(accept);
 
 	appWindow->display();
 }
@@ -675,7 +811,7 @@ void Game::drawDealChest(const bool * selectedCards, const unsigned & currentGol
 	tDamage.setCharacterSize(20);
 	tCostGold.setCharacterSize(20);
 	tCostMana.setCharacterSize(20);
-	for (int i = 0; i < cardsExchange.size(); ++i) { //rysuj staty karty pod ni¹
+	for (auto i = 0; i < cardsExchange.size(); ++i) { //rysuj staty karty pod ni¹
 		tDamage.setPosition(50 + 200 * i, 245);
 		tCostGold.setPosition(50 + 200 * i, 275);
 		tCostMana.setPosition(50 + 200 * i, 305);
@@ -730,6 +866,12 @@ void Game::setOponentSquare(const int & x, const int & y, const int & loc) {
 
 void Game::setAdjacent(int index, int val){
 	adjacent[index] = val;
+}
+
+void Game::setText(sf::Text & text, const int & fontSize, const int & r, const int & g, const int & b) {
+	text.setFont(font);
+	text.setCharacterSize(fontSize);
+	text.setFillColor(Color(r, g, b));
 }
 
 

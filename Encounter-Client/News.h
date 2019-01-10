@@ -43,11 +43,21 @@ struct NewsDeal {
 };
 
 struct NewsFight {
+	// [0] - moje; [1] - przeciwnika
+	bool youWon;
+	int strength[2];
+	int intelligence[2];
+	int vitality[2];
+	int hp[2];
+	int cardAmount[2];
+	std::vector<int> cardsId[2];	// posiadane karty
+	int chosenCard; //klinet->server wysyła id karty ktora wybral; server->klient wysyła id karty ktora zagral przeciwnik
+
 	NewsFight();
 
 	Mode gameMode;
 	
-	friend sf::Packet& operator<<(sf::Packet& pckt, const NewsFight& x);
-	friend sf::Packet& operator >> (sf::Packet& pckt, NewsFight& x);
+	friend sf::Packet& operator<< (sf::Packet& pckt, const NewsFight& x); //napisc
+	friend sf::Packet& operator>> (sf::Packet& pckt, NewsFight& x); //npaisc
 };
 #endif

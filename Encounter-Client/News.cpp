@@ -76,12 +76,36 @@ sf::Packet & operator >> (sf::Packet & pckt, NewsDeal & x) {
 }
 
 sf::Packet & operator<<(sf::Packet & pckt, const NewsFight & x) {
-	// TODO: insert return statement here
+	pckt << x.youWon;
+	pckt << x.strength[0] << x.strength[1];
+	pckt << x.intelligence[0] << x.intelligence[1];
+	pckt << x.vitality[0] << x.vitality[1];
+	pckt << static_cast<int>(x.cardsId[0].size()) << static_cast<int>(x.cardsId[1].size());
+	for (int i : {0, 1})
+		for (int j=0; j < x.cardAmount[i]; ++j)
+			pckt << x.cardsId[i][j];
+	pckt << x.chosenCard;
+
 	return pckt;
 }
 
 sf::Packet & operator >> (sf::Packet & pckt, NewsFight & x) {
-	// TODO: insert return statement here
+	pckt >> x.youWon;
+	pckt >> x.strength[0];
+	pckt >> x.strength[1];
+	pckt >> x.intelligence[0];
+	pckt >> x.intelligence[1];
+	pckt >> x.vitality[0];
+	pckt >> x.vitality[1];
+	pckt >> x.hp[0];
+	pckt >> x.hp[1];
+	pckt >> x.cardAmount[0];
+	pckt >> x.cardAmount[1];
+	for (int i : {0, 1})
+		for (int j = 0; j < x.cardAmount[i]; ++j)
+			pckt >> x.cardsId[i][j];
+	pckt >> x.chosenCard;
+
 	return pckt;
 }
 

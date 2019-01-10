@@ -16,5 +16,6 @@ public:
 	//std::vector <Location>& getLocations();
 
 	friend class Communication;
+	friend class Game;
 };
 
