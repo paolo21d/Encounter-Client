@@ -436,8 +436,8 @@ void Game::deal() {
 	}
 	mySquareX = news.areaToGoBackAfterDealX;
 	mySquareY = news.areaToGoBackAfterDealY;
-	myX = mySquareX * 50 + 25; //sprawdzic
-	myY = mySquareY * 25 + 15; //sprawdzic
+	myX = mySquareX * areaSizeX + 25; //sprawdzic
+	myY = mySquareY * areaSizeY + 15; //sprawdzic
 
 
 	if (income == 0) { //deal with Dealer

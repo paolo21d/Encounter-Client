@@ -9,8 +9,10 @@
 
 const unsigned mapSizeX = 1000, mapSizeY = 550;
 const unsigned areaSizeX = 50, areaSizeY = 25;
-const unsigned squareHeight = mapSizeY / areaSizeY;
-const unsigned squareWidth = mapSizeX / areaSizeX;
+//const unsigned squareHeight = mapSizeY / areaSizeY;
+//const unsigned squareWidth = mapSizeX / areaSizeX;
+const unsigned squareHeight = 25;
+const unsigned squareWidth = 50;
 const unsigned infoWidth = 50;
 
 const unsigned costStrength = 10;
