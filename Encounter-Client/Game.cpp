@@ -31,6 +31,16 @@ Game::Game(Communication * comptr):Game() {
 
 Game::~Game(){
 	delete appWindow;
+	Location *loc;
+	for (auto i = 0; i < worldMap.locations.size(); ++i) { //usuniecie objektow w lokacjach
+		loc = &worldMap.locations[i];
+		for (auto k = 0; k < loc->objects.size(); ++k)
+			delete loc->objects[k];
+	}
+
+	for (auto i = 0; i < worldMap.allCards.size(); ++i) { //usuniecie wszystkich kart
+		delete worldMap.allCards[i];
+	}
 }
 
 void Game::intro() {
@@ -181,7 +191,9 @@ int Game::startGame() {
 		cannnotConnect();
 		throw;
 	}
-	explore();
+	communication->receiveMap();
+
+	explore(); //w³¹czenie trybu eksploracji
 	communication->exitCommunication();
 	return 0;
 }
@@ -207,61 +219,88 @@ void Game::explore() {
 		while (appWindow->pollEvent(event)) {
 			if (event.type == Event::Closed) {
 				appWindow->close();
-				throw exception("0");
-			} else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
+				return;
+			} 
+			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
 				appWindow->close();
-				throw exception("0");
+				return;
 			} 
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Left) {
-				if (adjacent[3] == 1) { //nieinteraktywne
-					if((myX-1)*squareWidth / squareWidth != mySquareX)
+				lock_guard<mutex> lock(protectData);
+				if (adjacent[3] == 1) { //nieinteraktywne - nie mozna wejsc
+					if((myX-1)*squareWidth != mySquareX)
 						continue;
 					myX--;
 				} else if (adjacent[3] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myX--;
-					//sprawdzenie czy sie przeszlo juz na sasiednie pole
+					if ((myX)*squareWidth != mySquareX) {//przeszedlem na sasiadujace pole
+						mySquareX--;
+					}
 				} else { //interaktywne
-
+					myX--;
+					if ((myX)*squareWidth != mySquareX) {//wszed³em na pole interaktywne
+						mySquareX--;
+						//ale nie zmieniam myX ?!?!?!?!
+					}
 				}
 			} 
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Right) {
+				lock_guard<mutex> lock(protectData);
 				if (adjacent[1] == 1) { //nieinteraktywne
-					if ((myX + 1)*squareWidth / squareWidth != mySquareX)
+					if ((myX + 1)/squareWidth != mySquareX)
 						continue;
 					myX++;
 				} else if (adjacent[1] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myX++;
-					//sprawdzenie czy sie przeszlo juz na sasiednie pole
+					if ((myX)*squareWidth != mySquareX) {//przeszedlem na sasiadujace pole
+						mySquareX++;
+					}
 				} else { //interaktywne
-
+					myX++;
+					if ((myX)*squareWidth != mySquareX) {//wszed³em na pole interaktywne
+						mySquareX++;
+					}
 				}
 			}
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Up) {
+				lock_guard<mutex> lock(protectData);
 				if (adjacent[0] == 1) { //nieinteraktywne
-					if ((myY - 1)*squareHeight / squareHeight != mySquareY)
+					if ((myY - 1) / squareHeight != mySquareY)
 						continue;
 					myY--;
 				} else if (adjacent[0] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myY--;
-					//sprawdzenie czy przeszlo sie na sasiednie pole
+					if (myY / squareHeight != mySquareY) {
+						mySquareY--;
+					}
 				} else { //interaktywne
-
+					myY--;
+					if (myY / squareHeight != mySquareY) {
+						mySquareY--;
+					}
 				}
 			}
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Down) {
+				lock_guard<mutex> lock(protectData);
 				if (adjacent[2] == 1) { //nieinteraktywne
-					if ((myY + 1)*squareHeight / squareHeight != mySquareY)
+					if ((myY + 1) / squareHeight != mySquareY)
 						continue;
 					myY++;
 				} else if (adjacent[2] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myY++;
-					//sprawdzenie czy przeszlo sie na sasiednie pole
+					if (myY / squareHeight != mySquareY) {
+						mySquareY++;
+					}
 				} else { //interaktywne
-
+					myY++;
+					if (myY / squareHeight != mySquareY) {
+						mySquareY++;
+					}
 				}
 			}
-
+			protectData.lock(); ///nie wiem czy nie przerzuciæ tych 3 linii za t¹ klamrê od while event
 			drawExplore(sidebar);
+			protectData.unlock();
 		}//while obslugi eventow
 		if (endGame != 0) { //konczymy gre
 			string infoEndGame;
@@ -271,6 +310,14 @@ void Game::explore() {
 			} else if (endGame == 2) { //wygralem z przeciwnikiem
 				//ekran koñca gry	
 				infoEndGame = "Wygra³eœ! Przeciwnik zosta³ pokonany";
+				//zaznaczenie ¿e ju¿ odwiedzi³em mobka wiêc nie bêdzie wyœwietlany
+				Object *obj;
+				for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
+					obj = *it;
+					if (obj->getX() == mySquareX && obj->getY()) { //znalaz³em obiekt mobka, zmieniam jego visibility na false
+						obj->setVisibility(false);
+					}
+				}
 			} else if (endGame == 3) { //przeciwnik siê roz³¹czy³
 				//ekran koñca gry
 				infoEndGame = "Koniec gry. Przeciwnik roz³¹czy³ siê...";
@@ -281,11 +328,9 @@ void Game::explore() {
 				while (appWindow->pollEvent(e)) {
 					if (e.type == Event::Closed) {
 						appWindow->close();
-						//throw exception("0");
 						return;
 					} else if (e.type == Event::KeyPressed && event.key.code == Keyboard::Escape) {
 						appWindow->close();
-						//throw exception("0");
 						return;
 					}
 				}
@@ -312,6 +357,9 @@ void Game::fight() {
 	///odebrac fight news inicjalizuj¹cy
 	news = communication->receiveFightNews();
 	setCardsOnHand(news);
+	int mobIndexInLocationArray = news.strength[0];
+	int mobIndexInObjectArray = news.strength[1];
+
 	drawFightHideOpponentCard(background, news);//narysowanie
 	
 	news = communication->receiveFightNews(); //odebranie juz pierwszego konkretnego
@@ -382,7 +430,7 @@ void Game::fight() {
 			if (news.endFight != 0) { //zakonczona walka
 				//1-ja wygralem; 2-wygral przeciwnik
 				mode = EXPLORE;
-
+				worldMap.locations[mobIndexInLocationArray].objects[mobIndexInObjectArray]->setVisibility(false);
 				return;
 			}
 			setCardsOnHand(news);
@@ -392,6 +440,7 @@ void Game::fight() {
 			news = communication->receiveFightNews(); //odebranie info o ruchu przeciwnika
 			if (news.endFight != 0) { //koniec walki
 				mode = EXPLORE;
+				worldMap.locations[mobIndexInLocationArray].objects[mobIndexInObjectArray]->setVisibility(false);
 				return;
 			}
 			for (auto i = 0; i < worldMap.allCards.size(); ++i) { //wybrana karta przez oponenta
@@ -436,8 +485,8 @@ void Game::deal() {
 	}
 	mySquareX = news.areaToGoBackAfterDealX;
 	mySquareY = news.areaToGoBackAfterDealY;
-	myX = mySquareX * areaSizeX + 25; //sprawdzic
-	myY = mySquareY * areaSizeY + 15; //sprawdzic
+	myX = mySquareX * squareWidth + 25; //sprawdzic
+	myY = mySquareY * squareHeight + 15; //sprawdzic
 
 
 	if (income == 0) { //deal with Dealer
@@ -558,6 +607,15 @@ void Game::deal() {
 	}
 	else { //deal with Chest
 		drawDealChest(selectedCard, currentGold, background); //rysuje tylko raz ekran dealowania z chest bo nic tam sie nie zmienia
+		//zaznaczenie ¿e ju¿ odwiedzona skrzynka wiêc nie bêdzie wyœwietlana
+		Object *obj;
+		for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
+			obj = *it;
+			if (obj->getX() == mySquareX && obj->getY() == mySquareY) { //znalaz³em obiekt skrzynki, zmieniam jej visibility na false
+				obj->setVisibility(false);
+			}
+		}
+
 		while (appWindow->isOpen()) {
 			Event event;
 			//drawDealChest(selectedCard, currentGold, background);
@@ -575,7 +633,7 @@ void Game::deal() {
 					Vector2i mousePosition = Mouse::getPosition(*appWindow);
 					int mouseX = mousePosition.x;
 					int mouseY = mousePosition.y;
-					if (mouseY >= 480 && mouseY <= 520) { //pasek przyscisku accept
+					if (mouseY >= 480 && mouseY <= 520) { //pasek przycisku accept
 						if (mouseX >= 800 && mouseX <= 950) { //przycisk akceptuj
 							news.gameMode = DEAL;
 							news.cardsId.clear();
@@ -613,8 +671,8 @@ void Game::drawExplore(Sprite &sidebar) {
 	bool paintedOpponent = false;
 	for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
 		Object *obj = *it;
-		/*if (obj->getVisibility() == false) //jezeli skrzynka lub mobek zostana odwiedzeni to s¹ oni usuwani z vecotr<Object*>objects w location
-			continue;*/
+		if (obj->getVisibility() == false) //jezeli skrzynka lub mobek zostana odwiedzeni to s¹ oni usuwani z vecotr<Object*>objects w location
+			continue;
 		if (obj->getY() > mySquareY && !paintedHero) { //rysuj mojego bohatera w odpowiednim miejscu
 			sp = myHero->getSprite();
 			x = myX;
@@ -651,15 +709,6 @@ void Game::drawExplore(Sprite &sidebar) {
 	}
 	//rysowanie paska info
 	Text tHp, tStat, tGold;
-	/*tHp.setFont(font);
-	tStat.setFont(font);
-	tGold.setFont(font);
-	tHp.setFillColor(Color(255, 51, 51));
-	tStat.setFillColor(Color(255, 255, 255));
-	tGold.setFillColor(Color(255, 255, 77));
-	tHp.setCharacterSize(20);
-	tStat.setCharacterSize(20);
-	tGold.setCharacterSize(20);*/
 	setText(tHp, 20, 255, 51, 51);
 	setText(tStat, 20, 255, 255, 255);
 	setText(tGold, 20, 255, 255, 77); //moze byc color: 212, 175, 55
@@ -713,12 +762,6 @@ void Game::drawFightHideOpponentCard(sf::Sprite & background, const NewsFight &n
 	Text myHp, opHp;
 	setText(myHp, 25, 212, 175, 55);
 	setText(opHp, 25, 212, 175, 55);
-	/*myHp.setFont(font);
-	opHp.setFont(font);
-	myHp.setCharacterSize(25);
-	opHp.setCharacterSize(25);
-	myHp.setFillColor(Color(212, 175, 55));
-	opHp.setFillColor(Color(212, 175, 55));*/
 	myHp.setString("HP: " + to_string(news.hp[0]));
 	opHp.setString("HP: " + to_string(news.hp[1]));
 
@@ -779,15 +822,6 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	}
 	/////// staty kart
 	Text tDamage, tCostGold, tCostMana;
-	/*tDamage.setFont(font);
-	tCostGold.setFont(font);
-	tCostMana.setFont(font);
-	tDamage.setFillColor(Color(255, 204, 204));
-	tCostGold.setFillColor(Color(255, 255, 153));
-	tCostMana.setFillColor(Color(153, 204, 255));
-	tDamage.setCharacterSize(20);
-	tCostGold.setCharacterSize(20);
-	tCostMana.setCharacterSize(20);*/
 	setText(tDamage, 20, 255, 204, 204);
 	setText(tCostGold, 20, 255, 255, 153); //moze byc color: 212, 175, 55
 	setText(tCostMana, 20, 153, 204, 255);
@@ -804,18 +838,6 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	}
 	/////// zakup statow
 	Text statName, statPoints, statCost, statPlus;
-	/*statName.setFont(font);
-	statName.setFillColor(Color(255, 255, 255));
-	statName.setCharacterSize(50);
-	statPoints.setFont(font);
-	statPoints.setFillColor(Color(255, 255, 255));
-	statPoints.setCharacterSize(50);
-	statCost.setFont(font);
-	statCost.setFillColor(Color(255, 255, 255));
-	statCost.setCharacterSize(25);
-	statPlus.setFont(font);
-	statPlus.setFillColor(Color(255, 255, 255));
-	statPlus.setCharacterSize(50);*/
 	setText(statName, 50, 255, 255, 255);
 	setText(statPoints, 50, 255, 255, 255);
 	setText(statCost, 25, 255, 255, 255);
@@ -875,9 +897,6 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	appWindow->draw(statCost);
 	/////// wyswietl ilosc golda
 	Text gold;
-	/*gold.setFont(font);
-	gold.setFillColor(Color(255, 255, 255));
-	gold.setCharacterSize(50);*/
 	setText(gold, 50, 255, 255, 255);
 	gold.setString(L"Masz z³ota: " + to_string(currentGold));
 	gold.setPosition(450, 480);
@@ -887,9 +906,6 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	accpetButton.setFillColor(Color(38, 13, 13));
 	accpetButton.setPosition(800, 480);
 	Text accept;
-	/*accpet.setFont(font);
-	accpet.setFillColor(Color(255, 255, 255));
-	accpet.setCharacterSize(30);*/
 	setText(accept, 30, 255, 255, 255);
 	accept.setPosition(850, 485);
 	appWindow->draw(accpetButton);
@@ -976,18 +992,50 @@ void Game::drawEndGame(string info) {
 }
 
 void Game::setMySquare(const int & x, const int & y) {
+	lock_guard<mutex> lock(protectData);
+	if (mySquareX != x) {//niezgodnosc
+		myX = x*squareWidth + 25;
+	}
+	if (mySquareY != y) {//niezgodnosc
+		myY = y*squareHeight + 10;
+	}
 	mySquareX = x;
 	mySquareY = y;
 }
 
 void Game::setOponentSquare(const int & x, const int & y, const int & loc) {
+	lock_guard<mutex> lock(protectData);
 	opponentSquareX = x;
 	opponentSquareY = y;
 	opponentLocationId = loc;
 }
 
 void Game::setAdjacent(int index, int val){
+	lock_guard<mutex> lock(protectData);
 	adjacent[index] = val;
+}
+
+void Game::setMode(Mode mode_) {
+	lock_guard<mutex> lock(protectData);
+	mode = mode_;
+}
+
+Mode Game::getMode() {
+	lock_guard<mutex> lock(protectData);
+	Mode mode_ = mode;
+	return mode_;
+}
+
+int Game::getMySquareX() {
+	lock_guard<mutex> lock(protectData);
+	int sx = mySquareX;
+	return sx;
+}
+
+int Game::getMySquareY() {
+	lock_guard<mutex> lock(protectData);
+	int sy = mySquareY;
+	return sy;
 }
 
 inline void Game::setText(sf::Text & text, const int & fontSize, const int & r, const int & g, const int & b) {

@@ -17,6 +17,7 @@ unsigned Location::areaSizeY = 25;
 
 Communication::Communication() {
 	ip = IpAddress::getLocalAddress();
+	//th = nullptr;
 }
 
 Communication::~Communication() {
@@ -31,7 +32,7 @@ void Communication::startCommunication(Game &g) {
 	}
 	//sleep(milliseconds(2000));
 	//th = new thread(&Communication::srData, this);//dzialalo raczej
-	auto p = make_unique<thread>(&Communication::exploreCommunication, this, g);
+	//auto p = make_unique<thread>(&Communication::exploreCommunication, this, g);
 	//th->join(); //to by zatrzymalo w tym miejscu wykonywanie
 }
 
@@ -209,53 +210,62 @@ void Communication::sendReceiveData(Game &game) { //ta meteoda jest odpalana jak
 }
 
 void Communication::startExploreCommunicationInOnotherThread(Game & game) {
-	//delete th;
-	//th = new thread(&Communication::exploreCommunication, this, game); //to ma odpalac exploreCommunication
-	auto p = make_unique<thread>(&Communication::exploreCommunication, this, game);
+	/*if(th!=nullptr)
+		delete th;*/
+	//th = new thread(&Communication::exploreCommunication, this, ref(game));
+	auto p = make_unique<thread>(&Communication::exploreCommunication, this, ref(game));
+	thrUniquePtr = move(p);
 }
 
 void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsExplore, nastepnie wysy³a NewsExplore, ustawia dane pola game 
 	NewsExplore nExplore;
+	Mode m;
 	while (1) {
 		Packet receive, sent;
 		//odbierz dane
 		mut.lock();
 		socket.receive(receive);
-		if (game.mode == EXPLORE) {
+		mut.unlock();
+		if (game.getMode() == EXPLORE) {
 			receive >> nExplore;
-			//mut.lock();
-			game.mode = nExplore.gameMode;
+			game.setMode(nExplore.gameMode);
 			game.setMySquare(nExplore.positionX, nExplore.positionY);
 			game.setOponentSquare(nExplore.oponentX, nExplore.oponentY, nExplore.oponentLocationId);
 			for (int i = 0; i < 4; ++i)
 				game.setAdjacent(i, nExplore.adjacent[i]);
-			//mut.unlock();
-
-			if (game.mode == DEAL) { //zaczal sie tryb dealowania
-				mut.unlock();
-				return; //zamykanie watku
-			} else if (game.mode == FIGHT) { //zaczal sie tryb walki
-				mut.unlock();
+			
+			m = game.getMode();
+			if (m == DEAL || m == FIGHT) { //rozpoczal sie tryb delaowania lub walki
 				return; //zamykanie watku
 			}
+
+			/*if (game.getMode() == DEAL) { //zaczal sie tryb dealowania
+				mut.unlock();
+				return; //zamykanie watku
+			} else if (game.getMode() == FIGHT) { //zaczal sie tryb walki
+				mut.unlock();
+				return; //zamykanie watku
+			}*/
 		}
 		mut.unlock();
 
 		//wysylaj dane
-		mut.lock();
-		if (game.mode == EXPLORE) {
-			nExplore.positionX = game.mySquareX;
-			nExplore.positionY = game.mySquareY;
+		if (game.getMode() == EXPLORE) {
+			nExplore.positionX = game.getMySquareX();
+			nExplore.positionY = game.getMySquareY();
 			//mut.unlock();
 			sent << nExplore;
+			mut.lock();
 			socket.send(sent);
+			mut.unlock();
 		}
-		mut.unlock();
 	}
 }
 
 void Communication::exitCommunication() {
+	//mut.lock();
 	socket.disconnect();
+	//mut.unlock();
 }
 
 void Communication::sendExploreNews(const NewsExplore & news) {

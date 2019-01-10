@@ -4,14 +4,15 @@
 #include <SFML\Network.hpp>
 #include <thread>
 #include <mutex>
-#include <memory>
+//#include <memory>
 //extern std::mutex mutBlockCommunication;
+//extern std::mutex protectData;
 class Communication
 {
 	sf::IpAddress ip;
-	sf::TcpSocket socket;
+	sf::TcpSocket socket; //ten socket s³u¿y do obs³ugi ca³ej komuniakcji z serwerem
 	//std::thread *th;
-	//std::unique_ptr <std::thread> thrUniquePtr;
+	std::unique_ptr <std::thread> thrUniquePtr;
 	std::mutex mut;
 public:
 	Communication();

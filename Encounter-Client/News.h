@@ -16,7 +16,7 @@ struct NewsExplore {
 
 	Mode gameMode; //w obie strony
 	int endGame; //0-trwa gra, 1-ja przegtralem (umarlem w walce), 2-ja wygralem(pokonalem przeciwnika), 3-przeciwnik uciekl(rozlaczyl sie)
-	int adjacent[4]; //0-góra, 1-prawa, 2-dół, 3-lewa //0-mozna wejsc, 1-pole nieinteraktywne, 2-pole interaktywne //wysylane z serwera do klienta
+	int adjacent[4]; //0-góra, 1-prawa, 2-dół, 3-lewa //0-mozna wejsc, 1-pole nieinteraktywne(nie mozna wejsc), 2-pole interaktywne //wysylane z serwera do klienta
 	int positionX, positionY; //wysylane od klienta do serwera
 	int oponentLocationId;
 	int oponentX, oponentY;

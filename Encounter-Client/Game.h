@@ -19,8 +19,10 @@ const unsigned costStrength = 10;
 const unsigned costIntelligence = 15;
 const unsigned costVitality = 10;
 
+
 //std::mutex mutBlockCommunication;
 class Game {
+	std::mutex protectData;
 	Communication *communication; //ten obiekt tez jest wywolywany w osobnym watku, pamietac o mutexach jak sie na nim dziala
 	int endGame; //0-trwa gra, 1-ja przegtralem (umarlem w walce), 2-ja wygralem(pokonalem przeciwnika), 3-przeciwnik uciekl(rozlaczyl sie)
 
@@ -30,7 +32,7 @@ class Game {
 	Location* currentLocation;
 	//enum Mode { EXPLORE, FIGHT, DEAL };
 	int adjacent[4]; //0-góra, 1-prawa, 2-dó³, 3-lewa 
-					 //0-mozna wejsc, 1-pole nieinteraktywne, 2-pole interaktywne 
+					 //0-mozna wejsc, 1-pole nieinteraktywne(nie mozna wejsc), 2-pole interaktywne 
 	int myX, myY; //wspolrzedne gracza pixelowe
 	int mySquareX, mySquareY; //wspolrzedne pola na ktorym sie znaduje moj bohater
 	int opponentSquareX, opponentSquareY, opponentLocationId;
@@ -76,6 +78,10 @@ public:
 	void setMySquare(const int &x, const int &y);
 	void setOponentSquare(const int &x, const int &y, const int &loc);
 	void setAdjacent(int index, int val);
+	void setMode(Mode mode_);
+	Mode getMode();
+	int getMySquareX();
+	int getMySquareY();
 
 	inline void setText(sf::Text &text, const int &fontSize, const int &r, const int &g, const int &b);
 	inline void setCardsOnHand(const NewsFight &news);

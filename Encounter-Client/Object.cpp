@@ -40,6 +40,10 @@ int Object::getY() {
 	return posY;
 }
 
-/*bool Object::getVisibility() {
+void Object::setVisibility(bool v) {
+	visibility = v;
+}
+
+bool Object::getVisibility() {
 	return visibility;
-}*/
+}
