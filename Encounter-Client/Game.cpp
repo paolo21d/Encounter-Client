@@ -191,7 +191,12 @@ int Game::startGame() {
 		cannnotConnect();
 		throw;
 	}
-	communication->receiveMap();
+	try {
+		communication->receiveMap();
+	} catch (...) {
+		cout << "Cannot find file" << endl;
+		throw;
+	}
 
 	explore(); //w³¹czenie trybu eksploracji
 	communication->exitCommunication();

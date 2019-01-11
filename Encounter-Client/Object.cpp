@@ -16,7 +16,8 @@ Object::~Object()
 }
 
 void Object::setTexture() {
-	texture.loadFromFile("../receiveImg/" + srcName);
+	if (!texture.loadFromFile("../receiveImg/" + srcName))
+		throw std::exception("-2");
 }
 
 void Object::setSprite() {

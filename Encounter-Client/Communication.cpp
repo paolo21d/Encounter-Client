@@ -91,6 +91,7 @@ void Communication::receiveMap() {
 			packet2 >> objSrc;
 			//packet2 >> objType;
 			Object* obj = new Object(objSrc, objId, objX, objY);
+			obj->setSprite();
 			tempLocation.addObject(obj);
 			/*if (objType == 0) { //dealer
 				//pisac
