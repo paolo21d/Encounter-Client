@@ -14,6 +14,7 @@ using namespace std;
 /////////////////////////////////////moj zlowy kolor: 212, 175, 55
 Game::Game(){
 	appWindow = new RenderWindow(VideoMode(mapSizeX+infoWidth, mapSizeY, 32), "Encounter");
+	appWindow->setFramerateLimit(60);
 	mode = EXPLORE;
 	endGame = 0;
 	//font.loadFromFile("../img/Lato-Light.ttf");
@@ -186,6 +187,7 @@ int Game::startGame() {
 	}
 	try {
 		communication->startCommunication(*this);
+		drawWaitingForOpponent();
 	} catch (...) { //napisac komunikat ze nie mozna polaczyc a nie zamykac silowo
 		cout << "Connection Error - cannot connect" << endl;
 		cannnotConnect();
@@ -210,7 +212,21 @@ void Game::explore() {
 	sidebar.setTexture(sideTexture);
 	sidebar.setPosition(1000, 0);
 
-	drawExplore(sidebar);
+	////staty
+	Text tHp, tStat, tGold;
+	setText(tHp, 20, 255, 51, 51);
+	setText(tStat, 20, 255, 255, 255);
+	setText(tGold, 20, 255, 255, 77); //moze byc color: 212, 175, 55
+	tHp.setPosition(mapSizeX + 5, 50);
+	tGold.setPosition(mapSizeX + 5, 75);
+	tStat.setPosition(mapSizeX + 5, 100);
+	tHp.setString("HP: " + to_string(myHero->hp));
+	tStat.setString(L"Si³a: " + to_string(myHero->strength) + L"\nInteligencja: " + to_string(myHero->intelligence) + L"\nWitalnoœæ: " + to_string(myHero->vitality));
+	tGold.setString(L"Z³oto: " + to_string(myHero->gold));
+	////
+
+
+	drawExplore(sidebar, tHp, tStat, tGold);
 
 	while (appWindow->isOpen()) {
 		Event event;
@@ -304,9 +320,10 @@ void Game::explore() {
 				}
 			}
 			protectData.lock(); ///nie wiem czy nie przerzuciæ tych 3 linii za t¹ klamrê od while event
-			drawExplore(sidebar);
+			drawExplore(sidebar, tHp, tStat, tGold);
 			protectData.unlock();
 		}//while obslugi eventow
+		protectData.lock();
 		if (endGame != 0) { //konczymy gre
 			string infoEndGame;
 			if (endGame == 1) { //przegralem w walce
@@ -341,6 +358,7 @@ void Game::explore() {
 				}
 			}
 		}
+		protectData.unlock();
 	}
 }
 
@@ -350,6 +368,7 @@ void Game::fight() {
 	back.loadFromFile("../receiveImg/background.png");
 	Sprite background;
 	background.setTexture(back);
+	background.setPosition(0, 0);
 	Card* opponentPickedCard = nullptr;
 	Text opponentMove;
 	setText(opponentMove, 30, 212, 175, 55);
@@ -473,6 +492,7 @@ void Game::deal() {
 	back.loadFromFile("../receiveImg/background.png");
 	Sprite background;
 	background.setTexture(back);
+	background.setPosition(0, 0);
 
 	NewsDeal news;
 	news.gameMode = DEAL;
@@ -666,7 +686,7 @@ void Game::deal() {
 	
 }
 
-void Game::drawExplore(Sprite &sidebar) {
+void Game::drawExplore(Sprite &sidebar, Text &tHp, Text &tStat, Text &tGold) {
 	appWindow->clear(Color(150, 150, 150));
 	currentLocation->drawBackground(appWindow);
 	appWindow->draw(sidebar);
@@ -676,7 +696,7 @@ void Game::drawExplore(Sprite &sidebar) {
 	bool paintedOpponent = false;
 	for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
 		Object *obj = *it;
-		if (obj->getVisibility() == false) //jezeli skrzynka lub mobek zostana odwiedzeni to s¹ oni usuwani z vecotr<Object*>objects w location
+		if (obj->getVisibility() == false)//sprawdzenie czy mamy rysowaæ dany obiekt, czy tez zostal juz odwiedzony i jest niewidzialny
 			continue;
 		if (obj->getY() > mySquareY && !paintedHero) { //rysuj mojego bohatera w odpowiednim miejscu
 			sp = myHero->getSprite();
@@ -713,16 +733,7 @@ void Game::drawExplore(Sprite &sidebar) {
 		appWindow->draw(sp);
 	}
 	//rysowanie paska info
-	Text tHp, tStat, tGold;
-	setText(tHp, 20, 255, 51, 51);
-	setText(tStat, 20, 255, 255, 255);
-	setText(tGold, 20, 255, 255, 77); //moze byc color: 212, 175, 55
-	tHp.setPosition(mapSizeX + 5, 50);
-	tGold.setPosition(mapSizeX + 5, 75);
-	tStat.setPosition(mapSizeX + 5, 100);
-	tHp.setString("HP: " + to_string(myHero->hp));
-	tStat.setString(L"Si³a: " + to_string(myHero->strength) + L"\nInteligencja: " + to_string(myHero->intelligence) + L"\nWitalnoœæ: " + to_string(myHero->vitality));
-	tGold.setString(L"Z³oto: " + to_string(myHero->gold));
+	
 
 	appWindow->draw(tHp);
 	appWindow->draw(tGold);
@@ -993,6 +1004,22 @@ void Game::drawEndGame(string info) {
 	t.setString(info);
 	t.setPosition(100, 200);
 	appWindow->draw(t);
+	appWindow->display();
+}
+
+void Game::drawWaitingForOpponent() {
+	Texture back;
+	back.loadFromFile("../receiveImg/background.png");
+	Sprite background;
+	background.setTexture(back);
+	background.setPosition(0, 0);
+	appWindow->draw(background);
+
+	Text info;
+	setText(info, 50, 212, 175, 55);
+	info.setString(L"Czekam na po³¹czenie przeciwnika...");
+	info.setPosition(200, 200);
+	appWindow->draw(info);
 	appWindow->display();
 }
 

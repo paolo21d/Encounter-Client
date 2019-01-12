@@ -62,6 +62,7 @@ void Communication::receiveMap() {
 	//odbieram ramke: 1. mapSizeX 2. mapSizeY 3. ilosc lokacji 4. areaSizeX 5. areaSizeY 6. po kolei lokacje czyli najpierw id a potem src
 	Packet packet2;
 	socket.receive(packet2);
+	cout << "Odebralem pakiet mapy" << endl;
 	unsigned mapX, mapY, areaX, areaY, vecSize;
 	string locationSrc;
 	int locId;
@@ -79,7 +80,7 @@ void Communication::receiveMap() {
 	int objId, objX, objY;
 	string objSrc;
 	int objSize; //ilosc obiektow wewnatrz danej lokacji
-	int objType; //typ objektu: 0-Dealer, 1-Nature, 2-Mob, 3-Chest
+	//int objType; //typ objektu: 0-Dealer, 1-Nature, 2-Mob, 3-Chest
 	for (int i = 0; i < vecSize; ++i) { //przesy³anie lokacji
 		packet2 >> locId;
 		packet2 >> locationSrc;
@@ -95,18 +96,6 @@ void Communication::receiveMap() {
 			Object* obj = new Object(objSrc, objId, objX, objY);
 			obj->setSprite();
 			tempLocation.addObject(obj);
-			/*if (objType == 0) { //dealer
-				//pisac
-			}
-			else if (objType == 1) { //Nature
-				Object* obj = new Nature(); //pisac
-			}
-			else if (objType == 2) { //Mob
-				//pisac
-			}
-			else if (objType == 3) { //Chest
-
-			}*/
 		}
 		tempMap.addLocation(tempLocation);
 	}

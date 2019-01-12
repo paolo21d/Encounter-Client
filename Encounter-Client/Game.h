@@ -8,11 +8,11 @@
 #include <mutex>
 
 const unsigned mapSizeX = 1000, mapSizeY = 550;
-const unsigned areaSizeX = 50, areaSizeY = 25;
+const unsigned areaSizeX = 100, areaSizeY = 50;
 //const unsigned squareHeight = mapSizeY / areaSizeY;
 //const unsigned squareWidth = mapSizeX / areaSizeX;
-const unsigned squareHeight = 25;
-const unsigned squareWidth = 50;
+const unsigned squareHeight = 50;
+const unsigned squareWidth = 100;
 const unsigned infoWidth = 50;
 
 const unsigned costStrength = 10;
@@ -66,7 +66,7 @@ public:
 	void fight();
 	void deal();
 
-	void drawExplore(sf::Sprite &sidebar);
+	void drawExplore(sf::Sprite &sidebar, sf::Text &tHp, sf::Text &tStat, sf::Text &tGold);
 	void drawFight(sf::Sprite &background);
 	void drawFightHideOpponentCard(sf::Sprite &background, const NewsFight &news);
 	void drawFightShowOpponentCard(sf::Sprite &background, const NewsFight &news);
@@ -74,6 +74,7 @@ public:
 	void drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold, sf::Sprite &background);
 	void drawDealChest(const bool *selectedCards, const unsigned &currentGold, sf::Sprite &background);
 	void drawEndGame(std::string info);
+	void drawWaitingForOpponent();
 
 	void setMySquare(const int &x, const int &y);
 	void setOponentSquare(const int &x, const int &y, const int &loc);
