@@ -177,7 +177,7 @@ void Game::cannnotConnect() {
 }
 
 int Game::startGame() {
-	intro();
+	//intro();
 	try {
 		enterName();
 	} catch (...) {
@@ -197,7 +197,7 @@ int Game::startGame() {
 		cout << "Cannot find file" << endl;
 		throw;
 	}
-
+	cout << "Zaczynam explore" << endl;
 	explore(); //w³¹czenie trybu eksploracji
 	communication->exitCommunication();
 	return 0;

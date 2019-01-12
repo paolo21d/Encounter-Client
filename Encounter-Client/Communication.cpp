@@ -24,6 +24,7 @@ Communication::~Communication() {
 }
 
 void Communication::startCommunication(Game &g) {
+	cout << "StartCommunication" << endl;
 	Socket::Status status = socket.connect(ip, 2003);
 
 	if (status != Socket::Done) {
@@ -37,6 +38,7 @@ void Communication::startCommunication(Game &g) {
 }
 
 void Communication::receiveMap() {
+	cout << "Receive Map" << endl;
 	//odbieram grafiki i je zapisuje pod odpowiednia nazwa do folderu 'receiveImg'
 	//odbieram ramke z informacja ile grafik otrzymam
 	/*Packet packet1;
