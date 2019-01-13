@@ -1,5 +1,6 @@
 #pragma once
 #include "Object.h"
+#include <string>
 class Character : public Object
 {
 public:
@@ -11,6 +12,7 @@ public:
 
 	Character();
 	~Character();
+	void setSpriteHero(std::string src_);
 
 	friend class Game;
 };

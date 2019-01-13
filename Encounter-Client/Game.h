@@ -15,9 +15,9 @@ const unsigned squareHeight = 50;
 const unsigned squareWidth = 100;
 const unsigned infoWidth = 50;
 
-const unsigned costStrength = 10;
-const unsigned costIntelligence = 15;
-const unsigned costVitality = 10;
+const int costStrength = 1;
+const int costIntelligence = 1;
+const int costVitality = 1;
 
 
 //std::mutex mutBlockCommunication;

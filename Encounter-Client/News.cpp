@@ -64,15 +64,19 @@ sf::Packet & operator<<(sf::Packet & pckt, const NewsDeal & x) {
 }
 
 sf::Packet & operator >> (sf::Packet & pckt, NewsDeal & x) {
-	int cardSize, mode;
+	int cardSize, mode, cardId;
 	pckt >> mode;
 	x.gameMode = static_cast<Mode>(mode);
-	pckt >> cardSize; //ilosc kart do przeslania
-	for (int i = 0; i < cardSize; ++i)
-		pckt >> x.cardsId[i];
+	pckt >> x.accept;
 	pckt >> x.areaToGoBackAfterDealX;
 	pckt >> x.areaToGoBackAfterDealY;
-	pckt >> x.accept;
+	
+	pckt >> cardSize; //ilosc kart do przeslania
+	for (int i = 0; i < cardSize; ++i) {
+		pckt >> cardId;
+		x.cardsId.push_back(cardId);
+	}
+	
 	pckt >> x.income;
 	return pckt;
 }

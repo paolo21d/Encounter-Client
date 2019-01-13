@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML\Graphics.hpp>
 class Object {
+protected:
 	std::string srcName;
 	int id;
 	int posX, posY;

@@ -12,7 +12,7 @@ class Communication
 {
 	sf::IpAddress ip;
 	sf::TcpSocket socket; //ten socket s³u¿y do obs³ugi ca³ej komuniakcji z serwerem
-	//std::thread *th;
+	std::thread *th;
 	std::unique_ptr <std::thread> thrUniquePtr;
 	std::mutex mut;
 public:

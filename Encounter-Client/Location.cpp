@@ -13,10 +13,11 @@ Location::Location(int locid, string src) {
 	areaSizeY = y;*/
 	id = locid;
 	srcTexture = src;
-	if (!locationTexture.loadFromFile("../receiveImg/" + src)) {
+	/*if (!locationTexture.loadFromFile("../receiveImg/" + src)) {
 		throw exception("-1");
 	}
 	locationSprite.setTexture(locationTexture);
+	locationSprite.setPosition(0, 0);*/
 }
 
 Location::~Location() {
@@ -48,6 +49,14 @@ void Location::addObject(Object * obj) {
 
 void Location::drawBackground(sf::RenderWindow * appWindow) {
 	appWindow->draw(locationSprite);
+}
+
+void Location::setSprite() {
+	if (!locationTexture.loadFromFile("../receiveImg/" + srcTexture)) {
+		throw exception("-1");
+	}
+	locationSprite.setTexture(locationTexture);
+	locationSprite.setPosition(0, 0);
 }
 
 int Location::getId() {

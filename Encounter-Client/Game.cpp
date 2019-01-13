@@ -11,7 +11,7 @@
 
 using namespace sf;
 using namespace std;
-/////////////////////////////////////moj zlowy kolor: 212, 175, 55
+/////////////////////////////////////moj z³oty kolor: 212, 175, 55
 Game::Game(){
 	appWindow = new RenderWindow(VideoMode(mapSizeX+infoWidth, mapSizeY, 32), "Encounter");
 	appWindow->setFramerateLimit(60);
@@ -202,18 +202,25 @@ int Game::startGame() {
 		cout << "Cannot find file" << endl;
 		throw;
 	}
-	cout << "Zaczynam explore" << endl;
+	cout << "Odbieram pakiet inicjalizacyjny" << endl;
 	//odebranie packet inicjalizujacy
-	int locId;
+	int locIdMy, locIdOpp;
 	Packet initPacket = communication->receivePacket();
 	initPacket >> myHero->strength;
 	initPacket >> myHero->intelligence;
 	initPacket >> myHero->vitality;
 	initPacket >> myHero->gold;
-	initPacket >> locId;
-	currentLocation = &worldMap.locations[locId];
+	initPacket >> locIdMy;
+	currentLocation = &worldMap.locations[locIdMy];
 	initPacket >> mySquareX;
 	initPacket >> mySquareY;
+	myX = mySquareX*squareWidth + 25;
+	myY = mySquareY*squareHeight + 15;
+	initPacket >> opponentLocationId;
+	initPacket >> opponentSquareX;
+	initPacket >> opponentSquareY;
+	myHero->hp = myHero->vitality; //ma sie tyle hp ile ma sie witalnosci
+
 	//odpalam watek komunikacji
 	communication->startExploreCommunicationInOnotherThread(*this);
 	explore(); //w³¹czenie trybu eksploracji
@@ -222,6 +229,7 @@ int Game::startGame() {
 }
 
 void Game::explore() {
+	cout << "Zaczynam explore" << endl;
 	Texture sideTexture;
 	sideTexture.loadFromFile("../receiveImg/side_bar.png");
 	Sprite sidebar;
@@ -234,9 +242,11 @@ void Game::explore() {
 	setText(tStat, 20, 255, 255, 255);
 	setText(tGold, 20, 255, 255, 77); //moze byc color: 212, 175, 55
 	tHp.setPosition(mapSizeX + 5, 50);
-	tGold.setPosition(mapSizeX + 5, 75);
-	tStat.setPosition(mapSizeX + 5, 100);
+	tGold.setPosition(mapSizeX + 5, 100);
+	tStat.setPosition(mapSizeX + 5, 150);
 	////
+	myHero->setSpriteHero("hero0.png");
+	opponentHero->setSpriteHero("hero0.png");
 
 	drawExplore(sidebar, tHp, tStat, tGold);
 
@@ -260,18 +270,20 @@ void Game::explore() {
 			} 
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Left) {
 				lock_guard<mutex> lock(protectData);
+				if (myX - 1 <= 0)
+					continue;
 				if (adjacent[3] == 1) { //nieinteraktywne - nie mozna wejsc
-					if((myX-1)*squareWidth != mySquareX)
+					if((myX-1)/squareWidth != mySquareX)
 						continue;
 					myX--;
 				} else if (adjacent[3] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myX--;
-					if ((myX)*squareWidth != mySquareX) {//przeszedlem na sasiadujace pole
+					if ((myX)/squareWidth != mySquareX) {//przeszedlem na sasiadujace pole
 						mySquareX--;
 					}
 				} else { //interaktywne
 					myX--;
-					if ((myX)*squareWidth != mySquareX) {//wszed³em na pole interaktywne
+					if ((myX)/squareWidth != mySquareX) {//wszed³em na pole interaktywne
 						mySquareX--;
 						//ale nie zmieniam myX ?!?!?!?!
 					}
@@ -279,24 +291,28 @@ void Game::explore() {
 			} 
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Right) {
 				lock_guard<mutex> lock(protectData);
+				if (myX + 1 >= mapSizeX)
+					continue;
 				if (adjacent[1] == 1) { //nieinteraktywne
 					if ((myX + 1)/squareWidth != mySquareX)
 						continue;
 					myX++;
 				} else if (adjacent[1] == 0) { //mozna wejsc na siasiadujace pole - puste
 					myX++;
-					if ((myX)*squareWidth != mySquareX) {//przeszedlem na sasiadujace pole
+					if ((myX)/squareWidth != mySquareX) {//przeszedlem na sasiadujace pole
 						mySquareX++;
 					}
 				} else { //interaktywne
 					myX++;
-					if ((myX)*squareWidth != mySquareX) {//wszed³em na pole interaktywne
+					if ((myX)/squareWidth != mySquareX) {//wszed³em na pole interaktywne
 						mySquareX++;
 					}
 				}
 			}
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Up) {
 				lock_guard<mutex> lock(protectData);
+				if (myY - 1 <= 0)
+					continue;
 				if (adjacent[0] == 1) { //nieinteraktywne
 					if ((myY - 1) / squareHeight != mySquareY)
 						continue;
@@ -315,6 +331,8 @@ void Game::explore() {
 			}
 			else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Down) {
 				lock_guard<mutex> lock(protectData);
+				if (myY + 1 >= mapSizeY)
+					continue;
 				if (adjacent[2] == 1) { //nieinteraktywne
 					if ((myY + 1) / squareHeight != mySquareY)
 						continue;
@@ -375,6 +393,7 @@ void Game::explore() {
 }
 
 void Game::fight() {
+	cout << "Zaczynam Fight!!!!" << endl;
 	bool clickedCard = false;
 	Texture back;
 	back.loadFromFile("../receiveImg/background.png");
@@ -495,10 +514,11 @@ void Game::fight() {
 }
 
 void Game::deal() {
+	cout << "Zaczynam deal!!" << endl;
 	bool selectedCard[5];
 	for (unsigned i = 0; i < 5; ++i) selectedCard[i] = false;
 	unsigned addStrength = 0, addIntelligence = 0, addVitality = 0;
-	unsigned currentGold = myHero->gold;
+	int currentGold = static_cast<int>(myHero->gold);
 
 	Texture back;
 	back.loadFromFile("../receiveImg/background.png");
@@ -520,13 +540,14 @@ void Game::deal() {
 			}
 		}
 	}
-	mySquareX = news.areaToGoBackAfterDealX;
-	mySquareY = news.areaToGoBackAfterDealY;
-	myX = mySquareX * squareWidth + 25; //sprawdzic
-	myY = mySquareY * squareHeight + 15; //sprawdzic
+	//mySquareX = news.areaToGoBackAfterDealX;
+	//mySquareY = news.areaToGoBackAfterDealY;
+	//myX = mySquareX * squareWidth + 25; //sprawdzic
+	//myY = mySquareY * squareHeight + 15; //sprawdzic
 
 
 	if (income == 0) { //deal with Dealer
+		drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 		while (appWindow->isOpen()) {
 			Event event;
 			while (appWindow->pollEvent(event)) {
@@ -541,52 +562,53 @@ void Game::deal() {
 					Vector2i mousePosition = Mouse::getPosition(*appWindow);
 					int mouseX = mousePosition.x;
 					int mouseY = mousePosition.y;
+					cout << "Mouse X: " << mouseX << ", Y: " << mouseY << endl;
 					if (mouseY >= 25 && mouseY <= 225) { //pasek grafik kart
 						if (mouseX >= 50 && mouseX <= 200 && cardsExchange.size() >= 1) { //1. karta
 							if (selectedCard[0] == false && currentGold - cardsExchange[0]->costGold >= 0) { //zaznaczam karte
 								selectedCard[0] = true;
 								currentGold -= cardsExchange[0]->costGold;
-							} else if (selectedCard[0] == false) { //odznaczam karte
+							} else if (selectedCard[0] == true) { //odznaczam karte
 								selectedCard[0] = false;
 								currentGold += cardsExchange[0]->costGold;
 							}
 							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 						}
-						else if (mouseX >= 250 && mouseY <= 400 && cardsExchange.size() >= 2) { //2. karta
+						else if (mouseX >= 250 && mouseX <= 400 && cardsExchange.size() >= 2) { //2. karta
 							if (selectedCard[1] == false && currentGold - cardsExchange[1]->costGold >= 0) { //zaznaczam karte
 								selectedCard[1] = true;
 								currentGold -= cardsExchange[1]->costGold;
-							} else if (selectedCard[1] == false) { //odznaczam karte
+							} else if (selectedCard[1] == true) { //odznaczam karte
 								selectedCard[1] = false;
 								currentGold += cardsExchange[1]->costGold;
 							}
 							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 						}
-						else if (mouseX >= 450 && mouseY <= 600 && cardsExchange.size() >= 3) { //3. karta
+						else if (mouseX >= 450 && mouseX <= 600 && cardsExchange.size() >= 3) { //3. karta
 							if (selectedCard[2] == false && currentGold - cardsExchange[2]->costGold >= 0) { //zaznaczam karte
 								selectedCard[2] = true;
 								currentGold -= cardsExchange[2]->costGold;
-							} else if (selectedCard[2] == false) { //odznaczam karte
+							} else if (selectedCard[2] == true) { //odznaczam karte
 								selectedCard[2] = false;
 								currentGold += cardsExchange[2]->costGold;
 							}
 							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 						} 
-						else if (mouseX >= 650 && mouseY <= 800 && cardsExchange.size() >= 4) { //4. karta
+						else if (mouseX >= 650 && mouseX <= 800 && cardsExchange.size() >= 4) { //4. karta
 							if (selectedCard[3] == false && currentGold - cardsExchange[3]->costGold >= 0) { //zaznaczam karte
 								selectedCard[3] = true;
 								currentGold -= cardsExchange[3]->costGold;
-							} else if (selectedCard[3] == false) { //odznaczam karte
+							} else if (selectedCard[3] == true) { //odznaczam karte
 								selectedCard[3] = false;
 								currentGold += cardsExchange[3]->costGold;
 							}
 							drawDealDealer(selectedCard, addStrength, addIntelligence, addVitality, currentGold, background);
 						}
-						else if (mouseX >= 850 && mouseY <= 1000 && cardsExchange.size() >= 5) { //5. karta
+						else if (mouseX >= 850 && mouseX <= 1000 && cardsExchange.size() >= 5) { //5. karta
 							if (selectedCard[4] == false && currentGold - cardsExchange[4]->costGold >= 0) { //zaznaczam karte
 								selectedCard[4] = true;
 								currentGold -= cardsExchange[4]->costGold;
-							} else if (selectedCard[4] == false) { //odznaczam karte
+							} else if (selectedCard[4] == true) { //odznaczam karte
 								selectedCard[4] = false;
 								currentGold += cardsExchange[4]->costGold;
 							}
@@ -625,9 +647,25 @@ void Game::deal() {
 									news.cardsId.push_back(cardsExchange[i]->id);
 								}
 							}
-							communication->sendDealNews(news);
+							news.addStrength = addStrength;
+							news.addIntelligence = addIntelligence;
+							news.addVitality = addVitality;
+							communication->sendDealNews(news); //wyslanie info z tym co chce zakupic
 							//mozna dopisac ewentualnie jakies wysiwtlenie ze udalo sie zakupic te rzeczy
 							news = communication->receiveDealNews(); //pole news.accept
+
+							//ustaw moje zloto i staty
+							myHero->gold = currentGold;
+							myHero->strength += addStrength;
+							myHero->intelligence += addIntelligence;
+							myHero->vitality += addVitality;
+							myHero->hp = myHero->vitality;
+
+							mySquareX = news.areaToGoBackAfterDealX;
+							mySquareY = news.areaToGoBackAfterDealY;
+							myX = mySquareX * squareWidth + 25;
+							myY = mySquareY * squareHeight + 15;
+
 							mode = EXPLORE;
 							NewsExplore nExp;
 							nExp.gameMode = EXPLORE;
@@ -652,6 +690,8 @@ void Game::deal() {
 				obj->setVisibility(false);
 			}
 		}
+		//dodaj z³oto mi
+		myHero->gold += income;
 
 		while (appWindow->isOpen()) {
 			Event event;
@@ -680,6 +720,11 @@ void Game::deal() {
 							communication->sendDealNews(news);
 							//mozna dopisac ewentualnie jakies wysiwtlenie ze udalo sie zakupic te rzeczy
 							news = communication->receiveDealNews(); //pole news.accept
+							mySquareX = news.areaToGoBackAfterDealX;
+							mySquareY = news.areaToGoBackAfterDealY;
+							myX = mySquareX * squareWidth + 25;
+							myY = mySquareY * squareHeight + 15; 
+							//cout << "MySX" << mySquareX << " MySY" << mySquareY << endl;
 							mode = EXPLORE;
 							NewsExplore nExp;
 							nExp.gameMode = EXPLORE;
@@ -699,6 +744,7 @@ void Game::deal() {
 }
 
 void Game::drawExplore(Sprite &sidebar, Text &tHp, Text &tStat, Text &tGold) {
+	//cout << "Rysuje mape" << endl;
 	appWindow->clear(Color(150, 150, 150));
 	//currentLocation->drawBackground(appWindow);
 	appWindow->draw(currentLocation->locationSprite);
@@ -707,33 +753,67 @@ void Game::drawExplore(Sprite &sidebar, Text &tHp, Text &tStat, Text &tGold) {
 	int x, y;
 	bool paintedHero = false;
 	bool paintedOpponent = false;
-	//for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
+	
+	RectangleShape objSquare(sf::Vector2f(100, 50));
+	objSquare.setFillColor(Color(150, 150, 150, 50));
+	RectangleShape heroSquare(sf::Vector2f(100, 50));
+	heroSquare.setFillColor(Color(255, 150, 150, 50));
+	//objSquare.setPosition(800, 480);
+
 	for(auto i=0; i<currentLocation->objects.size(); ++i){
-		//Object *obj = *it;
 		Object *obj = currentLocation->objects[i];
 		if (obj->getVisibility() == false)//sprawdzenie czy mamy rysowaæ dany obiekt, czy tez zostal juz odwiedzony i jest niewidzialny
 			continue;
-		if (obj->getY() > mySquareY && !paintedHero) { //rysuj mojego bohatera w odpowiednim miejscu
+		if (obj->getY() <= mySquareY && !paintedHero) { //rysuj mojego bohatera w odpowiednim miejscu
+			objSquare.setPosition(obj->getX()*squareWidth, obj->getY()*squareHeight);
+			appWindow->draw(objSquare);
+			sp = obj->getSprite();
+			x = obj->getX() * squareWidth;
+			y = (obj->getY() + 1) * squareHeight - sp.getLocalBounds().height;
+			sp.setPosition(Vector2f(x, y));
+			appWindow->draw(sp);
+			////
+			heroSquare.setPosition(mySquareX*squareWidth, mySquareY*squareHeight);
+			appWindow->draw(heroSquare);
 			sp = myHero->getSprite();
 			x = myX;
 			y = myY - sp.getLocalBounds().height;
 			sp.setPosition(Vector2f(x, y));
 			appWindow->draw(sp);
+			paintedHero = true;
+			continue;
 		}
-		if (opponentLocationId == currentLocation->getId() && obj->getY() > opponentSquareY && !paintedOpponent) { //rysuj bohatera przeciwnka w opowiednim miejscu
-			sp = opponentHero->getSprite();
-			x = opponentSquareX * squareWidth;
-			y = opponentSquareY * squareHeight - sp.getLocalBounds().height;
+		if (opponentLocationId == currentLocation->getId() && obj->getY() <= opponentSquareY && !paintedOpponent) { //rysuj bohatera przeciwnka w opowiednim miejscu
+			objSquare.setPosition(obj->getX()*squareWidth, obj->getY()*squareHeight);
+			appWindow->draw(objSquare);
+			sp = obj->getSprite();
+			x = obj->getX() * squareWidth + squareWidth/2;
+			y = (obj->getY() + 1) * squareHeight - sp.getLocalBounds().height;
 			sp.setPosition(Vector2f(x, y));
 			appWindow->draw(sp);
+			///
+			heroSquare.setPosition(opponentSquareX*squareWidth, opponentSquareY*squareHeight);
+			appWindow->draw(heroSquare);
+			sp = opponentHero->getSprite();
+			x = opponentSquareX * squareWidth;
+			y = (opponentSquareY) * squareHeight - sp.getLocalBounds().height;
+			sp.setPosition(Vector2f(x, y));
+			appWindow->draw(sp);
+			paintedOpponent = true;
+			continue;
 		}
+		objSquare.setPosition(obj->getX()*squareWidth, obj->getY()*squareHeight);
+		appWindow->draw(objSquare);
 		sp = obj->getSprite();
 		x = obj->getX() * squareWidth;
-		y = obj->getY() * squareHeight - sp.getLocalBounds().height;
+		y = (obj->getY()+1) * squareHeight - sp.getLocalBounds().height;
 		sp.setPosition(Vector2f(x, y));
 		appWindow->draw(sp);
 	}
 	if (!paintedHero) { //rysuj mojego bohatera na samym dole mapy
+		heroSquare.setPosition(mySquareX*squareWidth, mySquareY*squareHeight);
+		appWindow->draw(heroSquare);
+		//
 		sp = myHero->getSprite();
 		x = myX;
 		y = myY - sp.getLocalBounds().height;
@@ -741,17 +821,20 @@ void Game::drawExplore(Sprite &sidebar, Text &tHp, Text &tStat, Text &tGold) {
 		appWindow->draw(sp);
 	}
 	if (opponentLocationId == currentLocation->getId() && !paintedOpponent) { //rysuj bohatera przeciwnika na dole mapy
+		heroSquare.setPosition(opponentSquareX*squareWidth, opponentSquareY*squareHeight);
+		appWindow->draw(heroSquare);
+		//	
 		sp = opponentHero->getSprite();
-		x = opponentSquareX * squareWidth;
-		y = opponentSquareY * squareHeight - sp.getLocalBounds().height;
+		x = opponentSquareX * squareWidth + squareWidth/2;
+		y = (opponentSquareY + 1) * squareHeight - sp.getLocalBounds().height;
 		sp.setPosition(Vector2f(x, y));
 		appWindow->draw(sp);
 	}
 	//rysowanie paska info
 	
-	tHp.setString("HP: " + to_string(myHero->hp));
-	tStat.setString(L"Si³a: " + to_string(myHero->strength) + L"\nInteligencja: " + to_string(myHero->intelligence) + L"\nWitalnoœæ: " + to_string(myHero->vitality));
-	tGold.setString(L"Z³oto: " + to_string(myHero->gold));
+	tHp.setString("HP:\n" + to_string(myHero->hp));
+	tGold.setString(L"\nGold:\n" + to_string(myHero->gold));
+	tStat.setString(L"\n\nStr:\n" + to_string(myHero->strength) + L"\nInt:\n" + to_string(myHero->intelligence) + L"\nVit:\n" + to_string(myHero->vitality));
 
 	appWindow->draw(tHp);
 	appWindow->draw(tGold);
@@ -872,9 +955,9 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	}
 	/////// zakup statow
 	Text statName, statPoints, statCost, statPlus;
-	setText(statName, 50, 255, 255, 255);
+	setText(statName, 30, 255, 255, 255);
 	setText(statPoints, 50, 255, 255, 255);
-	setText(statCost, 25, 255, 255, 255);
+	setText(statCost, 20, 255, 255, 255);
 	setText(statPlus, 50, 255, 255, 255);
 	statPlus.setString("+");
 	RectangleShape showStatRec(sf::Vector2f(50, 75));
@@ -942,6 +1025,7 @@ void Game::drawDealDealer(const bool *selectedCards, const unsigned &addStrength
 	Text accept;
 	setText(accept, 30, 255, 255, 255);
 	accept.setPosition(850, 485);
+	accept.setString("Akceptuj");
 	appWindow->draw(accpetButton);
 	appWindow->draw(accept);
 
@@ -1002,16 +1086,15 @@ void Game::drawDealChest(const bool * selectedCards, const unsigned & currentGol
 	gold.setPosition(450, 480);
 	appWindow->draw(gold);
 	/////// wyswietl przycisk accept
-	RectangleShape accpetButton(sf::Vector2f(150, 40));
-	accpetButton.setFillColor(Color(38, 13, 13));
-	accpetButton.setPosition(800, 480);
-	Text accpet;
-	accpet.setFont(font);
-	accpet.setFillColor(Color(255, 255, 255));
-	accpet.setCharacterSize(30);
-	accpet.setPosition(850, 485);
-	appWindow->draw(accpetButton);
-	appWindow->draw(accpet);
+	RectangleShape acceptButton(sf::Vector2f(150, 40));
+	acceptButton.setFillColor(Color(38, 13, 13));
+	acceptButton.setPosition(800, 480);
+	Text accept;
+	setText(accept, 30, 212, 175, 55);
+	accept.setPosition(825, 480);
+	accept.setString("Akceptuj");
+	appWindow->draw(acceptButton);
+	appWindow->draw(accept);
 	
 	appWindow->display();
 }
@@ -1044,13 +1127,13 @@ void Game::drawWaitingForOpponent() {
 void Game::setMySquare(const int & x, const int & y) {
 	lock_guard<mutex> lock(protectData);
 	if (mySquareX != x) {//niezgodnosc
-		myX = x*squareWidth + 25;
+		//myX = x*squareWidth + 25;
 	}
 	if (mySquareY != y) {//niezgodnosc
-		myY = y*squareHeight + 10;
+		//myY = y*squareHeight + 10;
 	}
-	mySquareX = x;
-	mySquareY = y;
+	//mySquareX = x;
+	//mySquareY = y;
 }
 
 void Game::setOponentSquare(const int & x, const int & y, const int & loc) {

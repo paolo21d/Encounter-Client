@@ -21,6 +21,7 @@ public:
 	//void draw(sf::RenderWindow *appWindow);
 	void addObject(Object *obj);
 	void drawBackground(sf::RenderWindow *appWindow);
+	void setSprite();
 	int getId();
 
 	friend class Game;

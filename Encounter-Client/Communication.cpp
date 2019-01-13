@@ -16,8 +16,9 @@ unsigned Location::areaSizeX = 50;
 unsigned Location::areaSizeY = 25;
 
 Communication::Communication() {
-	ip = IpAddress::getLocalAddress();
-	//th = nullptr;
+	//ip = IpAddress::getLocalAddress();
+	ip = IpAddress("192.168.0.218");
+	th = nullptr;
 }
 
 Communication::~Communication() {
@@ -25,7 +26,7 @@ Communication::~Communication() {
 
 void Communication::startCommunication(Game &g) {
 	cout << "StartCommunication" << endl;
-	Socket::Status status = socket.connect(ip, 2003);
+	Socket::Status status = socket.connect(ip, 2009);
 
 	if (status != Socket::Done) {
 		cout << "Cannot connect to server!" << endl;
@@ -101,13 +102,14 @@ void Communication::receiveMap(Map &map) {
 		}
 		//map.addLocation(tempLocation);
 		map.locations.push_back(tempLocation);
+		map.locations[map.locations.size() - 1].setSprite();
 		tempLocation.objects = {};
 	}
 	//przeslanie wszystkich kart
 	int cardSize;
 	int cardId, cardCostMana, cardDamage, cardCostGold;
 	string cardSrc, cardName, cardDescription;
-	Card* card;
+	//Card* card;
 	packet2 >> cardSize; //przeslanie ile kart jest w sumie
 	for (int i = 0; i < cardSize; ++i) {
 		packet2 >> cardId;
@@ -117,9 +119,10 @@ void Communication::receiveMap(Map &map) {
 		packet2 >> cardCostMana;
 		packet2 >> cardDamage;
 		packet2 >> cardCostGold;
-		card = new Card(cardId, cardSrc, cardName, cardDescription, cardCostMana, cardDamage, cardCostGold); //tworzenie kart
-		//map.addCard(card);
-		map.allCards.push_back(card);
+		map.allCards.push_back(new Card(cardId, cardSrc, cardName, cardDescription, cardCostMana, cardDamage, cardCostGold));//tworzenie kart
+		//card = new Card(cardId, cardSrc, cardName, cardDescription, cardCostMana, cardDamage, cardCostGold); 
+		////map.addCard(card);
+		//map.allCards.push_back(card);
 	}
 	//map = move(tempMap);
 }
@@ -210,9 +213,9 @@ void Communication::sendReceiveData(Game &game) { //ta meteoda jest odpalana jak
 void Communication::startExploreCommunicationInOnotherThread(Game & game) {
 	/*if(th!=nullptr)
 		delete th;*/
-	//th = new thread(&Communication::exploreCommunication, this, ref(game));
-	auto p = make_unique<thread>(&Communication::exploreCommunication, this, ref(game));
-	thrUniquePtr = move(p);
+	th = new thread(&Communication::exploreCommunication, this, ref(game));
+	//auto p = make_unique<thread>(&Communication::exploreCommunication, this, ref(game));
+	//thrUniquePtr = move(p);
 }
 
 void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsExplore, nastepnie wysy³a NewsExplore, ustawia dane pola game 
@@ -225,7 +228,9 @@ void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsE
 		socket.receive(receive);
 		mut.unlock();
 		if (game.getMode() == EXPLORE) {
+			cout << "Odbieram dane Explore" << endl;
 			receive >> nExplore;
+			cout << "odebralem dane Explore" << endl;
 			game.setMode(nExplore.gameMode);
 			game.setMySquare(nExplore.positionX, nExplore.positionY);
 			game.setOponentSquare(nExplore.oponentX, nExplore.oponentY, nExplore.oponentLocationId);
@@ -245,7 +250,7 @@ void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsE
 				return; //zamykanie watku
 			}*/
 		}
-		mut.unlock();
+		//mut.unlock();
 
 		//wysylaj dane
 		if (game.getMode() == EXPLORE) {
@@ -253,9 +258,11 @@ void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsE
 			nExplore.positionY = game.getMySquareY();
 			//mut.unlock();
 			sent << nExplore;
+			cout << "Wysylam dane Explore" << endl;
 			mut.lock();
 			socket.send(sent);
 			mut.unlock();
+			cout << "Wyslalem dane Explore" << endl;
 		}
 	}
 }

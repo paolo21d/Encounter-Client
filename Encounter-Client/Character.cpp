@@ -14,3 +14,10 @@ Character::Character() {
 Character::~Character()
 {
 }
+
+void Character::setSpriteHero(std::string src_) {
+	srcName = src_;
+	if (!texture.loadFromFile("../receiveImg/" + srcName))
+		throw std::exception("-2");
+	sprite.setTexture(texture);
+}

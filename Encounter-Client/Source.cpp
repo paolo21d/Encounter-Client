@@ -32,7 +32,7 @@ int main()
 	catch (...) {
 		cout << "Zamykam" << endl;
 		communication.exitCommunication();
-		return 0;
+		return -1;
 	}
 	return 0;
 }
