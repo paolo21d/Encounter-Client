@@ -22,5 +22,7 @@ public:
 	void addObject(Object *obj);
 	void drawBackground(sf::RenderWindow *appWindow);
 	int getId();
+
+	friend class Game;
 };
 

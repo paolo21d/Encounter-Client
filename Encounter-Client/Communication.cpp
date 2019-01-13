@@ -37,7 +37,7 @@ void Communication::startCommunication(Game &g) {
 	//th->join(); //to by zatrzymalo w tym miejscu wykonywanie
 }
 
-void Communication::receiveMap() {
+void Communication::receiveMap(Map &map) {
 	cout << "Receive Map" << endl;
 	//odbieram grafiki i je zapisuje pod odpowiednia nazwa do folderu 'receiveImg'
 	//odbieram ramke z informacja ile grafik otrzymam
@@ -69,7 +69,9 @@ void Communication::receiveMap() {
 
 	packet2 >> mapX;
 	packet2 >> mapY;
-	Map tempMap(mapX, mapY);
+	//Map tempMap(mapX, mapY);
+	map.mapSizeX = mapX;
+	map.mapSizeY = mapY;
 
 	packet2 >> vecSize;
 	packet2 >> areaX;
@@ -93,11 +95,13 @@ void Communication::receiveMap() {
 			packet2 >> objY;
 			packet2 >> objSrc;
 			//packet2 >> objType;
-			Object* obj = new Object(objSrc, objId, objX, objY);
-			obj->setSprite();
-			tempLocation.addObject(obj);
+			//Object* obj = new Object(objSrc, objId, objX, objY);
+			//tempLocation.addObject(obj);
+			tempLocation.addObject(new Object(objSrc, objId, objX, objY));
 		}
-		tempMap.addLocation(tempLocation);
+		//map.addLocation(tempLocation);
+		map.locations.push_back(tempLocation);
+		tempLocation.objects = {};
 	}
 	//przeslanie wszystkich kart
 	int cardSize;
@@ -114,8 +118,10 @@ void Communication::receiveMap() {
 		packet2 >> cardDamage;
 		packet2 >> cardCostGold;
 		card = new Card(cardId, cardSrc, cardName, cardDescription, cardCostMana, cardDamage, cardCostGold); //tworzenie kart
-		tempMap.addCard(card);
+		//map.addCard(card);
+		map.allCards.push_back(card);
 	}
+	//map = move(tempMap);
 }
 
 void Communication::srData() {
@@ -312,4 +318,13 @@ NewsFight Communication::receiveFightNews() {
 	NewsFight n;
 	get >> n;
 	return n;
+}
+
+sf::Packet Communication::receivePacket() {
+	Packet get;
+	mut.lock();
+	socket.receive(get);
+	mut.unlock();
+
+	return get;
 }

@@ -20,6 +20,9 @@ Game::Game(){
 	//font.loadFromFile("../img/Lato-Light.ttf");
 	font.loadFromFile("../img/Charm-Regular.ttf");
 	blockDealConnect = false;
+
+	myHero = new Character;
+	opponentHero = new Character;
 	//squareHeight = 20;
 	//squareHeight = 20;
 	//RenderWindow temp(VideoMode(1114, 572, 32), "Encounter");
@@ -194,12 +197,25 @@ int Game::startGame() {
 		throw;
 	}
 	try {
-		communication->receiveMap();
+		communication->receiveMap(worldMap);
 	} catch (...) {
 		cout << "Cannot find file" << endl;
 		throw;
 	}
 	cout << "Zaczynam explore" << endl;
+	//odebranie packet inicjalizujacy
+	int locId;
+	Packet initPacket = communication->receivePacket();
+	initPacket >> myHero->strength;
+	initPacket >> myHero->intelligence;
+	initPacket >> myHero->vitality;
+	initPacket >> myHero->gold;
+	initPacket >> locId;
+	currentLocation = &worldMap.locations[locId];
+	initPacket >> mySquareX;
+	initPacket >> mySquareY;
+	//odpalam watek komunikacji
+	communication->startExploreCommunicationInOnotherThread(*this);
 	explore(); //w³¹czenie trybu eksploracji
 	communication->exitCommunication();
 	return 0;
@@ -220,11 +236,7 @@ void Game::explore() {
 	tHp.setPosition(mapSizeX + 5, 50);
 	tGold.setPosition(mapSizeX + 5, 75);
 	tStat.setPosition(mapSizeX + 5, 100);
-	tHp.setString("HP: " + to_string(myHero->hp));
-	tStat.setString(L"Si³a: " + to_string(myHero->strength) + L"\nInteligencja: " + to_string(myHero->intelligence) + L"\nWitalnoœæ: " + to_string(myHero->vitality));
-	tGold.setString(L"Z³oto: " + to_string(myHero->gold));
 	////
-
 
 	drawExplore(sidebar, tHp, tStat, tGold);
 
@@ -688,14 +700,17 @@ void Game::deal() {
 
 void Game::drawExplore(Sprite &sidebar, Text &tHp, Text &tStat, Text &tGold) {
 	appWindow->clear(Color(150, 150, 150));
-	currentLocation->drawBackground(appWindow);
+	//currentLocation->drawBackground(appWindow);
+	appWindow->draw(currentLocation->locationSprite);
 	appWindow->draw(sidebar);
 	Sprite sp;
 	int x, y;
 	bool paintedHero = false;
 	bool paintedOpponent = false;
-	for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
-		Object *obj = *it;
+	//for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
+	for(auto i=0; i<currentLocation->objects.size(); ++i){
+		//Object *obj = *it;
+		Object *obj = currentLocation->objects[i];
 		if (obj->getVisibility() == false)//sprawdzenie czy mamy rysowaæ dany obiekt, czy tez zostal juz odwiedzony i jest niewidzialny
 			continue;
 		if (obj->getY() > mySquareY && !paintedHero) { //rysuj mojego bohatera w odpowiednim miejscu
@@ -734,6 +749,9 @@ void Game::drawExplore(Sprite &sidebar, Text &tHp, Text &tStat, Text &tGold) {
 	}
 	//rysowanie paska info
 	
+	tHp.setString("HP: " + to_string(myHero->hp));
+	tStat.setString(L"Si³a: " + to_string(myHero->strength) + L"\nInteligencja: " + to_string(myHero->intelligence) + L"\nWitalnoœæ: " + to_string(myHero->vitality));
+	tGold.setString(L"Z³oto: " + to_string(myHero->gold));
 
 	appWindow->draw(tHp);
 	appWindow->draw(tGold);

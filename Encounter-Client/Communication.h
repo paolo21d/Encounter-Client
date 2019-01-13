@@ -1,6 +1,7 @@
 #pragma once
 #include "Game.h"
 #include "News.h"
+#include "Map.h"
 #include <SFML\Network.hpp>
 #include <thread>
 #include <mutex>
@@ -18,7 +19,7 @@ public:
 	Communication();
 	~Communication();
 	void startCommunication(Game &g);
-	void receiveMap();
+	void receiveMap(Map &map);
 
 	void srData();
 	void sendReceiveData(Game &game);
@@ -33,6 +34,8 @@ public:
 	NewsExplore receiveExploreNews();
 	NewsDeal receiveDealNews();
 	NewsFight receiveFightNews();
+
+	sf::Packet receivePacket();
 	//void com();
 };
 
