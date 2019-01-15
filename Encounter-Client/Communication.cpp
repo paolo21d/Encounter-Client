@@ -16,8 +16,8 @@ unsigned Location::areaSizeX = 50;
 unsigned Location::areaSizeY = 25;
 
 Communication::Communication() {
-	//ip = IpAddress::getLocalAddress();
-	ip = IpAddress("192.168.0.218");
+	ip = IpAddress::getLocalAddress();
+	//ip = IpAddress("192.168.0.218");
 	th = nullptr;
 }
 
