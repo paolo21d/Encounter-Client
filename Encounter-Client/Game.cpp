@@ -181,7 +181,7 @@ void Game::cannnotConnect() {
 }
 
 int Game::startGame() {
-	//intro();
+	intro();
 	try {
 		enterName();
 	} catch (...) {
