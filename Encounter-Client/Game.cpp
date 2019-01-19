@@ -181,7 +181,7 @@ void Game::cannnotConnect() {
 }
 
 int Game::startGame() {
-	intro();
+	//intro();
 	try {
 		enterName();
 	} catch (...) {
@@ -257,6 +257,12 @@ void Game::explore() {
 			communication->startExploreCommunicationInOnotherThread(*this);
 		} else if (mode == FIGHT) { //wlaczamy tryb walki
 			fight();
+			mode = EXPLORE;
+			NewsExplore nExp;
+			nExp.gameMode = EXPLORE;
+			nExp.positionX = mySquareX;
+			nExp.positionY = mySquareY;
+			communication->sendExploreNews(nExp); //taki pusty
 			communication->startExploreCommunicationInOnotherThread(*this);
 		}
 		while (appWindow->pollEvent(event)) {
@@ -408,12 +414,18 @@ void Game::fight() {
 
 	NewsFight news;
 	news.gameMode = FIGHT;
+	news.endFight = -1;
 	communication->sendFightNews(news); //potwierdzenie trybu fight od klienta
 	///odebrac fight news inicjalizuj¹cy
-	news = communication->receiveFightNews();
+	cout << "Probuje odebrac info inicajali" << endl;
+	news = communication->receiveFightNews(); //odebranie ini
+	cout << "Odebralem info ini" << endl;
 	setCardsOnHand(news);
-	int mobIndexInLocationArray = news.strength[0];
-	int mobIndexInObjectArray = news.strength[1];
+	int mobIndexInLocationArray = news.vitality[0];
+	int mobIndexInObjectArray = news.vitality[1];
+
+	news.vitality[0] = news.hp[0];
+	news.vitality[1] = news.hp[1];
 
 	drawFightHideOpponentCard(background, news);//narysowanie
 	
@@ -432,6 +444,7 @@ void Game::fight() {
 		this_thread::sleep_for(chrono::milliseconds(1000));
 		if (news.endFight != 0) { //koniec walki, ktos wygral juz teraz
 			mode = EXPLORE;
+			worldMap.locations[mobIndexInLocationArray].objects[mobIndexInObjectArray]->setVisibility(false);
 			return;
 		}
 	} else { //ja zaczynam | chosenCard==-1
@@ -489,6 +502,9 @@ void Game::fight() {
 				return;
 			}
 			setCardsOnHand(news);
+			//myHero->hp = news.hp[0];
+			
+			//myHero->
 			drawFightHideOpponentCard(background, news);
 			appWindow->draw(opponentMove);
 			appWindow->display();
@@ -533,6 +549,7 @@ void Game::deal() {
 	mode = news.gameMode;
 	income = news.income;
 	accpet = news.accept;
+	cardsExchange.clear();
 	for (unsigned i = 0; i < news.cardsId.size(); ++i) {
 		for (unsigned f = 0; f < worldMap.allCards.size(); ++f) {
 			if (news.cardsId[i] == worldMap.allCards[f]->id) { //dopasowane id karty
@@ -857,14 +874,14 @@ void Game::drawFightHideOpponentCard(sf::Sprite & background, const NewsFight &n
 	cb.loadFromFile("../receiveImg/reverse.png");
 	cardBack.setTexture(cb);
 	//rysowanie awatarow - napisac
-	Sprite avatar1, avatar2; //avatar1 - opponent, avatar2 - myHero
+	/*Sprite avatar1, avatar2; //avatar1 - opponent, avatar2 - myHero
 	Texture tav1, tav2; //zaladowac obrazki z pliku
 	avatar1.setTexture(tav1);
 	avatar2.setTexture(tav2);
 	avatar1.setPosition(25, 25);
 	avatar2.setPosition(25, 375);
 	appWindow->draw(avatar1);
-	appWindow->draw(avatar2);
+	appWindow->draw(avatar2);*/
 	//rysowanie odwrotow kart przeciwnika
 	for (int i = 0; i < news.cardAmount[1]; ++i) {
 		cardBack.setPosition(175 + i * 175, 25);
@@ -874,12 +891,14 @@ void Game::drawFightHideOpponentCard(sf::Sprite & background, const NewsFight &n
 	for (int i = 0; i < myCardsOnHand.size(); ++i) {
 		myCard = myCardsOnHand[i]->sprite;
 		myCard.setPosition(175 + i * 175, 325);
+		appWindow->draw(myCard);
 	}
 	//narysowanie statysyk (HP)
-	Text myHp, opHp;
+	Text myHp, opHp, myMana;
 	setText(myHp, 25, 212, 175, 55);
 	setText(opHp, 25, 212, 175, 55);
-	myHp.setString("HP: " + to_string(news.hp[0]));
+	//setText(myMana, 25, 212, 175, 55);
+	myHp.setString("HP: " + to_string(news.hp[0])+"\nMANA: " + to_string(news.mana[0]));
 	opHp.setString("HP: " + to_string(news.hp[1]));
 
 	myHp.setPosition(25, 350);

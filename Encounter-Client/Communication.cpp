@@ -16,8 +16,8 @@ unsigned Location::areaSizeX = 50;
 unsigned Location::areaSizeY = 25;
 
 Communication::Communication() {
-	ip = IpAddress::getLocalAddress();
-	//ip = IpAddress("192.168.0.218");
+	//ip = IpAddress::getLocalAddress();
+	ip = IpAddress("192.168.0.218");
 	th = nullptr;
 }
 
@@ -26,7 +26,7 @@ Communication::~Communication() {
 
 void Communication::startCommunication(Game &g) {
 	cout << "StartCommunication" << endl;
-	Socket::Status status = socket.connect(ip, 2009);
+	Socket::Status status = socket.connect(ip, 2012);
 
 	if (status != Socket::Done) {
 		cout << "Cannot connect to server!" << endl;
@@ -222,13 +222,14 @@ void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsE
 	NewsExplore nExplore;
 	Mode m;
 	while (1) {
+		cout << "KOMU KOMU" << endl;
 		Packet receive, sent;
 		//odbierz dane
-		mut.lock();
-		socket.receive(receive);
-		mut.unlock();
 		if (game.getMode() == EXPLORE) {
 			cout << "Odbieram dane Explore" << endl;
+			mut.lock();
+			socket.receive(receive);
+			mut.unlock();
 			receive >> nExplore;
 			cout << "odebralem dane Explore" << endl;
 			game.setMode(nExplore.gameMode);
