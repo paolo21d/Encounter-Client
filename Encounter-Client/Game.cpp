@@ -264,6 +264,7 @@ void Game::explore() {
 			nExp.positionY = mySquareY;
 			communication->sendExploreNews(nExp); //taki pusty
 			communication->startExploreCommunicationInOnotherThread(*this);
+			sleep(milliseconds(1000));
 		}
 		while (appWindow->pollEvent(event)) {
 			if (event.type == Event::Closed) {
@@ -364,10 +365,10 @@ void Game::explore() {
 			string infoEndGame;
 			if (endGame == 1) { //przegralem w walce
 				//ekran koñca gry
-				infoEndGame = "Koniec gry. Przegra³eœ...";
+				infoEndGame = "Koniec gry. Przegrales...";
 			} else if (endGame == 2) { //wygralem z przeciwnikiem
 				//ekran koñca gry	
-				infoEndGame = "Wygra³eœ! Przeciwnik zosta³ pokonany";
+				infoEndGame = "Wygrales! Przeciwnik zostal pokonany";
 				//zaznaczenie ¿e ju¿ odwiedzi³em mobka wiêc nie bêdzie wyœwietlany
 				Object *obj;
 				for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
@@ -442,6 +443,7 @@ void Game::fight() {
 		appWindow->draw(sp);
 		appWindow->display();
 		this_thread::sleep_for(chrono::milliseconds(1000));
+		drawFightHideOpponentCard(background, news);
 		if (news.endFight != 0) { //koniec walki, ktos wygral juz teraz
 			mode = EXPLORE;
 			worldMap.locations[mobIndexInLocationArray].objects[mobIndexInObjectArray]->setVisibility(false);
@@ -493,6 +495,7 @@ void Game::fight() {
 		}//while lapanie eventow
 		if (clickedCard == true) { //wybrano karte
 			clickedCard = false;
+			sleep(milliseconds(500));
 			communication->sendFightNews(news); //wyslanie jaka karte wybralem
 			news = communication->receiveFightNews(); //odebranie reakcji po moim zagraniu
 			if (news.endFight != 0) { //zakonczona walka
@@ -521,6 +524,7 @@ void Game::fight() {
 			//wyswietlic przez chwile jaka karte wybral oponent
 			Sprite sp = opponentPickedCard->sprite;
 			sp.setPosition(400, 200);
+			drawFightHideOpponentCard(background, news);
 			appWindow->draw(sp);
 			appWindow->display();
 			sleep(milliseconds(1000));
@@ -1119,10 +1123,16 @@ void Game::drawDealChest(const bool * selectedCards, const unsigned & currentGol
 }
 
 void Game::drawEndGame(string info) {
+	Texture back;
+	back.loadFromFile("../receiveImg/background.png");
+	Sprite background;
+	background.setTexture(back);
+	background.setPosition(0, 0);
 	Text t;
 	setText(t, 50, 212, 175, 55);
 	t.setString(info);
 	t.setPosition(100, 200);
+	appWindow->draw(background);
 	appWindow->draw(t);
 	appWindow->display();
 }
@@ -1188,6 +1198,11 @@ int Game::getMySquareY() {
 	lock_guard<mutex> lock(protectData);
 	int sy = mySquareY;
 	return sy;
+}
+
+void Game::setEndGame(int m) {
+	lock_guard<mutex> lock(protectData);
+	endGame = m;
 }
 
 inline void Game::setText(sf::Text & text, const int & fontSize, const int & r, const int & g, const int & b) {

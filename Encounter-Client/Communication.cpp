@@ -17,7 +17,9 @@ unsigned Location::areaSizeY = 25;
 
 Communication::Communication() {
 	//ip = IpAddress::getLocalAddress();
-	ip = IpAddress("192.168.0.218");
+	ip = IpAddress("192.168.43.218");
+	//ip = IpAddress("192.168.43.218");
+	
 	th = nullptr;
 }
 
@@ -26,7 +28,7 @@ Communication::~Communication() {
 
 void Communication::startCommunication(Game &g) {
 	cout << "StartCommunication" << endl;
-	Socket::Status status = socket.connect(ip, 2012);
+	Socket::Status status = socket.connect(ip, 2017);
 
 	if (status != Socket::Done) {
 		cout << "Cannot connect to server!" << endl;
@@ -235,6 +237,7 @@ void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsE
 			game.setMode(nExplore.gameMode);
 			game.setMySquare(nExplore.positionX, nExplore.positionY);
 			game.setOponentSquare(nExplore.oponentX, nExplore.oponentY, nExplore.oponentLocationId);
+			game.setEndGame(nExplore.endGame);
 			for (int i = 0; i < 4; ++i)
 				game.setAdjacent(i, nExplore.adjacent[i]);
 			

@@ -83,6 +83,7 @@ public:
 	Mode getMode();
 	int getMySquareX();
 	int getMySquareY();
+	void setEndGame(int m);
 
 	inline void setText(sf::Text &text, const int &fontSize, const int &r, const int &g, const int &b);
 	inline void setCardsOnHand(const NewsFight &news);
