@@ -365,10 +365,14 @@ void Game::explore() {
 			string infoEndGame;
 			if (endGame == 1) { //przegralem w walce
 				//ekran koñca gry
-				infoEndGame = "Koniec gry. Przegrales...";
+				//infoEndGame = "Koniec gry. Przegrales...";
+				wchar_t *info = L"Koniec gry. Przegra³eœ...";
+				drawEndGame(info);
 			} else if (endGame == 2) { //wygralem z przeciwnikiem
 				//ekran koñca gry	
-				infoEndGame = "Wygrales! Przeciwnik zostal pokonany";
+				//infoEndGame = "Wygrales! Przeciwnik zostal pokonany";
+				wchar_t *info = L"Wygra³eœ. Przeciwnik zosta³ pokonany!";
+				drawEndGame(info);
 				//zaznaczenie ¿e ju¿ odwiedzi³em mobka wiêc nie bêdzie wyœwietlany
 				Object *obj;
 				for (auto it = currentLocation->objects.begin(); it != currentLocation->objects.end(); it++) {
@@ -379,9 +383,11 @@ void Game::explore() {
 				}
 			} else if (endGame == 3) { //przeciwnik siê roz³¹czy³
 				//ekran koñca gry
-				infoEndGame = "Koniec gry. Przeciwnik roz³¹czy³ siê...";
+				//infoEndGame = "Koniec gry. Przeciwnik roz³¹czy³ siê...";
+				wchar_t *info = L"Koniec gry. Przeciwnik roz³¹czy³ siê...";
+				drawEndGame(info);
 			}
-			drawEndGame(infoEndGame);
+			//drawEndGame(info);
 			while (appWindow->isOpen()) {
 				Event e;
 				while (appWindow->pollEvent(e)) {
@@ -1122,7 +1128,7 @@ void Game::drawDealChest(const bool * selectedCards, const unsigned & currentGol
 	appWindow->display();
 }
 
-void Game::drawEndGame(string info) {
+void Game::drawEndGame(wchar_t *info) {
 	Texture back;
 	back.loadFromFile("../receiveImg/background.png");
 	Sprite background;

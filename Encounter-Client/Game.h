@@ -73,7 +73,7 @@ public:
 	void drawFightEnd(sf::Sprite &background, const NewsFight &news);
 	void drawDealDealer(const bool *selectedCards, const unsigned &addStrength, const unsigned &addIntelligence, const unsigned &addVitality, const unsigned &currentGold, sf::Sprite &background);
 	void drawDealChest(const bool *selectedCards, const unsigned &currentGold, sf::Sprite &background);
-	void drawEndGame(std::string info);
+	void drawEndGame(wchar_t* info);
 	void drawWaitingForOpponent();
 
 	void setMySquare(const int &x, const int &y);
