@@ -10,6 +10,9 @@ Map::Map(unsigned x, unsigned y) {
 }
 
 Map::~Map() {
+	for (unsigned int i = 0; i < allCards.size(); ++i) {
+		delete allCards[i];
+	}
 }
 
 void Map::addLocation(Location & loc) {

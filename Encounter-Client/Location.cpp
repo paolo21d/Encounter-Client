@@ -21,7 +21,7 @@ Location::Location(int locid, string src) {
 }
 
 Location::~Location() {
-	for (auto it = objects.begin(); it != objects.end(); it++) {
+	for (auto it = objects.begin(); it != objects.end(); it++) { //usuwanie obiektow w lokacji
 		delete *it;
 	}
 }

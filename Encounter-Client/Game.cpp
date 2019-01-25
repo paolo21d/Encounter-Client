@@ -36,15 +36,15 @@ Game::Game(Communication * comptr):Game() {
 Game::~Game(){
 	delete appWindow;
 	Location *loc;
-	for (auto i = 0; i < worldMap.locations.size(); ++i) { //usuniecie objektow w lokacjach
+	/*for (auto i = 0; i < worldMap.locations.size(); ++i) { //usuniecie objektow w lokacjach
 		loc = &worldMap.locations[i];
 		for (auto k = 0; k < loc->objects.size(); ++k)
 			delete loc->objects[k];
-	}
+	}*/
 
-	for (auto i = 0; i < worldMap.allCards.size(); ++i) { //usuniecie wszystkich kart
+	/*for (auto i = 0; i < worldMap.allCards.size(); ++i) { //usuniecie wszystkich kart
 		delete worldMap.allCards[i];
-	}
+	}*/
 }
 
 void Game::intro() {
@@ -254,6 +254,8 @@ void Game::explore() {
 		Event event;
 		if (mode == DEAL) { //wlaczamy tryb dealowania
 			deal();
+			mode = EXPLORE;
+			cout << "Proba odpalenia watku komuniakcyjnego explore" << endl;
 			communication->startExploreCommunicationInOnotherThread(*this);
 		} else if (mode == FIGHT) { //wlaczamy tryb walki
 			fight();
@@ -263,10 +265,12 @@ void Game::explore() {
 			nExp.positionX = mySquareX;
 			nExp.positionY = mySquareY;
 			communication->sendExploreNews(nExp); //taki pusty
+			cout << "proba tworzenia watku komunikacji explore" << endl;
 			communication->startExploreCommunicationInOnotherThread(*this);
 			sleep(milliseconds(1000));
 		}
 		while (appWindow->pollEvent(event)) {
+			cout << "000000000000000000000000000000000000000000000000000000000000000000000000000" << endl;
 			if (event.type == Event::Closed) {
 				appWindow->close();
 				return;
@@ -360,8 +364,10 @@ void Game::explore() {
 			drawExplore(sidebar, tHp, tStat, tGold);
 			protectData.unlock();
 		}//while obslugi eventow
-		protectData.lock();
+		//drawExplore(sidebar, tHp, tStat, tGold);
+		//protectData.lock();
 		if (endGame != 0) { //konczymy gre
+			lock_guard<mutex> lock(protectData);
 			string infoEndGame;
 			if (endGame == 1) { //przegralem w walce
 				//ekran koñca gry
@@ -401,7 +407,7 @@ void Game::explore() {
 				}
 			}
 		}
-		protectData.unlock();
+		//protectData.unlock();
 	}
 }
 

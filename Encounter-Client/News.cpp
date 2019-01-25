@@ -18,7 +18,7 @@ ostream& operator<<(ostream& os, const NewsExplore& x) {
 
 sf::Packet& operator<<(sf::Packet& pckt, const NewsExplore& x) {
 	pckt << x.gameMode;
-	pckt << x.endGame;
+	//pckt << x.endGame;
 	for (int i : {0, 1, 2, 3})
 		pckt << x.adjacent[i];
 	pckt << x.positionX << x.positionY;

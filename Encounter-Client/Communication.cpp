@@ -17,8 +17,8 @@ unsigned Location::areaSizeY = 25;
 
 Communication::Communication() {
 	//ip = IpAddress::getLocalAddress();
-	ip = IpAddress("192.168.43.218");
-	//ip = IpAddress("192.168.43.218");
+	ip = IpAddress("192.168.43.218"); //oneplus
+	//ip = IpAddress("192.168.61.169"); //wieti wifi
 	
 	th = nullptr;
 }
@@ -28,7 +28,7 @@ Communication::~Communication() {
 
 void Communication::startCommunication(Game &g) {
 	cout << "StartCommunication" << endl;
-	Socket::Status status = socket.connect(ip, 2017);
+	Socket::Status status = socket.connect(ip, 2021);
 
 	if (status != Socket::Done) {
 		cout << "Cannot connect to server!" << endl;
@@ -216,6 +216,7 @@ void Communication::startExploreCommunicationInOnotherThread(Game & game) {
 	/*if(th!=nullptr)
 		delete th;*/
 	th = new thread(&Communication::exploreCommunication, this, ref(game));
+	cout << "Odpalilem watek kominikacji explore" << endl;
 	//auto p = make_unique<thread>(&Communication::exploreCommunication, this, ref(game));
 	//thrUniquePtr = move(p);
 }
@@ -243,6 +244,7 @@ void Communication::exploreCommunication(Game & game) { //Najpierw odbiera NewsE
 			
 			m = game.getMode();
 			if (m == DEAL || m == FIGHT) { //rozpoczal sie tryb delaowania lub walki
+				cout << "ZAMYKAM WATEK KOMUNIKACJI EXPLORE!!!" << endl;
 				return; //zamykanie watku
 			}
 
